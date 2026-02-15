@@ -30,6 +30,7 @@ export function Library() {
   const [isScanning, setIsScanning] = useState(true);
   const [lastFolder, setLastFolder] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [coverFocusMap, setCoverFocusMap] = useState<Record<string, number>>({});
 
   const loadBooks = useCallback(async () => {
     const folder = await Storage.getBaseFolder();
@@ -78,6 +79,10 @@ export function Library() {
       }
     }
     setProgressMap(map);
+
+    // Also refresh cover focus positions
+    const focusMap = await Storage.getAllCoverFocus();
+    setCoverFocusMap(focusMap);
   };
 
   // Scan on focus
@@ -115,6 +120,7 @@ export function Library() {
       progressPercent={progressMap[item.id] ?? null}
       isPlaying={player.currentBook?.id === item.id && player.isPlaying}
       onPress={() => handleBookPress(item)}
+      coverFocusY={coverFocusMap[item.id]}
     />
   );
 

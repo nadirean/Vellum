@@ -16,6 +16,9 @@ import { useNavigation } from '@react-navigation/native';
 import { theme } from '@consts/theme';
 import { usePlayer } from '@contexts/PlayerContext';
 import { ProgressBar } from '@components/ProgressBar';
+import { FocusedCoverImage } from '@components/FocusedCoverImage';
+import { CoverFocusModal } from '@components/CoverFocusModal';
+import * as Storage from '@utils/storage';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -36,6 +39,9 @@ function formatTime(ms: number): string {
 
 const RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
 
+// coverWrapper is 272×272 with padding:6 + borderWidth:2 → content area = 256
+const COVER_CONTENT_SIZE = 256;
+
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
@@ -44,6 +50,8 @@ export function Player() {
   const navigation = useNavigation();
   const player = usePlayer();
   const [showRateModal, setShowRateModal] = useState(false);
+  const [showFocusModal, setShowFocusModal] = useState(false);
+  const [coverFocusY, setCoverFocusY] = useState(50);
 
   const {
     currentBook,
@@ -58,6 +66,22 @@ export function Player() {
     timeLeftWithTempoMs,
     chapterDurations,
   } = player;
+
+  // Load persisted cover focus when book changes
+  useEffect(() => {
+    if (currentBook) {
+      Storage.getCoverFocusY(currentBook.id).then(setCoverFocusY);
+    } else {
+      setCoverFocusY(50);
+    }
+  }, [currentBook?.id]);
+
+  const handleSaveCoverFocus = async (focusY: number) => {
+    if (currentBook) {
+      setCoverFocusY(focusY);
+      await Storage.setCoverFocusY(currentBook.id, focusY);
+    }
+  };
 
   // Configure header with rate selector and chapters
   useEffect(() => {
@@ -144,20 +168,25 @@ export function Player() {
         )}
       </View>
 
-      {/* Cover Art */}
-      <View style={styles.coverWrapper}>
+      {/* Cover Art – long-press to adjust focus area */}
+      <Pressable
+        style={styles.coverWrapper}
+        onLongPress={() => currentBook.coverUri && setShowFocusModal(true)}
+        delayLongPress={400}
+      >
         {currentBook.coverUri ? (
-          <Image
-            source={{ uri: currentBook.coverUri }}
-            style={styles.cover}
-            resizeMode="cover"
+          <FocusedCoverImage
+            uri={currentBook.coverUri}
+            size={COVER_CONTENT_SIZE}
+            focusY={coverFocusY}
+            borderRadius={theme.borderRadius.lg}
           />
         ) : (
           <View style={styles.coverPlaceholder}>
             <MaterialCommunityIcons name="headphones" size={72} color={theme.colors.textSecondary} />
           </View>
         )}
-      </View>
+      </Pressable>
 
       {/* Title & Author */}
       <Text style={styles.title} numberOfLines={2}>
@@ -213,6 +242,17 @@ export function Player() {
           <MaterialCommunityIcons name="fast-forward" size={36} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
+
+      {/* Cover Focus Modal */}
+      {currentBook.coverUri && (
+        <CoverFocusModal
+          visible={showFocusModal}
+          coverUri={currentBook.coverUri}
+          initialFocusY={coverFocusY}
+          onSave={handleSaveCoverFocus}
+          onClose={() => setShowFocusModal(false)}
+        />
+      )}
 
       {/* Rate Modal */}
       <Modal
