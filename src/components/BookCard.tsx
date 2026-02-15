@@ -19,8 +19,6 @@ interface BookCardProps {
 }
 
 const CARD_GAP = theme.spacing.md;
-const SCREEN_PADDING = theme.spacing.md;
-const CARD_WIDTH = (Dimensions.get('window').width - SCREEN_PADDING * 2 - CARD_GAP) / 2;
 
 export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress }: BookCardProps) {
   return (
@@ -34,50 +32,57 @@ export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress 
           <Image source={{ uri: coverUri }} style={styles.cover} resizeMode="cover" />
         ) : (
           <View style={styles.coverPlaceholder}>
-            <MaterialCommunityIcons name="headphones" size={48} color={theme.colors.textSecondary} />
+            <MaterialCommunityIcons name="headphones" size={32} color={theme.colors.textSecondary} />
           </View>
         )}
         {isPlaying && (
           <View style={styles.playingBadge}>
-            <MaterialCommunityIcons name="play" size={12} color={theme.colors.text} />
+            <MaterialCommunityIcons name="play" size={10} color={theme.colors.text} />
           </View>
         )}
       </View>
 
-      <Text style={styles.title} numberOfLines={2}>
-        {title}
-      </Text>
+      <View style={styles.infoContainer}>
+        <Text style={styles.title} numberOfLines={2}>
+          {title}
+        </Text>
 
-      {progressPercent !== null && progressPercent > 0 && (
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBg}>
-            <View
-              style={[styles.progressFill, { width: `${Math.min(100, progressPercent)}%` }]}
-            />
+        {progressPercent !== null && progressPercent > 0 && (
+          <View style={styles.progressContainer}>
+            <View style={styles.progressBg}>
+              <View
+                style={[styles.progressFill, { width: `${Math.min(100, progressPercent)}%` }]}
+              />
+            </View>
+            <Text style={styles.progressText}>{Math.round(progressPercent)}%</Text>
           </View>
-          <Text style={styles.progressText}>{Math.round(progressPercent)}%</Text>
-        </View>
-      )}
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    width: CARD_WIDTH,
+    flexDirection: 'row',
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
     marginBottom: CARD_GAP,
+    alignItems: 'center',
+    padding: theme.spacing.sm,
   },
   cardPlaying: {
     borderColor: theme.colors.primary,
     borderWidth: 2,
+    padding: theme.spacing.sm - 2,
   },
   coverContainer: {
-    width: '100%',
-    aspectRatio: 1,
+    width: 60,
+    height: 60,
+    borderRadius: theme.borderRadius.sm,
     backgroundColor: theme.colors.surfaceLight,
+    overflow: 'hidden',
   },
   cover: {
     width: '100%',
@@ -90,36 +95,37 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceLight,
   },
   placeholderIcon: {
-    fontSize: 48,
+    fontSize: 32,
   },
   playingBadge: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
+    bottom: 4,
+    right: 4,
     backgroundColor: theme.colors.primary,
-    borderRadius: 14,
-    width: 28,
-    height: 28,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   playingText: {
     color: theme.colors.text,
-    fontSize: 12,
+    fontSize: 10,
+  },
+  infoContainer: {
+    flex: 1,
+    paddingLeft: theme.spacing.md,
   },
   title: {
     color: theme.colors.text,
     fontSize: theme.fontSize.md,
     fontWeight: '600',
-    padding: theme.spacing.sm,
-    paddingBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
   },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: theme.spacing.sm,
-    paddingBottom: theme.spacing.sm,
-    gap: 6,
+    gap: 8,
   },
   progressBg: {
     flex: 1,

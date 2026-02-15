@@ -153,9 +153,7 @@ export function Library() {
         data={books}
         renderItem={renderBook}
         keyExtractor={(b) => b.id}
-        numColumns={2}
         contentContainerStyle={styles.list}
-        columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -220,9 +218,6 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: theme.spacing.md,
-  },
-  row: {
-    gap: theme.spacing.md,
   },
   headerBtn: {
     paddingHorizontal: theme.spacing.sm,
