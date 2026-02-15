@@ -1,37 +1,66 @@
-import { Assets as NavigationAssets } from '@react-navigation/elements';
-import { DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { Asset } from 'expo-asset';
-import { createURL } from 'expo-linking';
+import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import * as React from 'react';
-import { useColorScheme } from 'react-native';
-import { Navigation } from './navigation';
-
-Asset.loadAsync([
-  ...NavigationAssets,
-  require('./assets/newspaper.png'),
-  require('./assets/bell.png'),
-]);
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
+import { RootNavigator } from './navigation';
+import { PlayerProvider } from './contexts/PlayerContext';
+import { theme } from './theme';
+import * as Storage from './utils/storage';
 
 SplashScreen.preventAutoHideAsync();
 
-const prefix = createURL('/');
+const navTheme = {
+  dark: true as const,
+  colors: {
+    primary: theme.colors.primary,
+    background: theme.colors.background,
+    card: theme.colors.surface,
+    text: theme.colors.text,
+    border: theme.colors.border,
+    notification: theme.colors.primary,
+  },
+  fonts: {
+    regular: { fontFamily: 'System', fontWeight: '400' as const },
+    medium: { fontFamily: 'System', fontWeight: '500' as const },
+    bold: { fontFamily: 'System', fontWeight: '700' as const },
+    heavy: { fontFamily: 'System', fontWeight: '900' as const },
+  },
+};
 
 export function App() {
-  const colorScheme = useColorScheme();
+  const [baseFolder, setBaseFolder] = useState<string | null | undefined>(undefined);
 
-  const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme
+  useEffect(() => {
+    Storage.getBaseFolder().then((folder) => {
+      setBaseFolder(folder);
+      SplashScreen.hideAsync();
+    });
+  }, []);
+
+  if (baseFolder === undefined) {
+    return (
+      <View style={styles.loading}>
+        <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} />
+        <ActivityIndicator color={theme.colors.primary} size="large" />
+      </View>
+    );
+  }
 
   return (
-    <Navigation
-      theme={theme}
-      linking={{
-        enabled: 'auto',
-        prefixes: [prefix],
-      }}
-      onReady={() => {
-        SplashScreen.hideAsync();
-      }}
-    />
+    <PlayerProvider>
+      <NavigationContainer theme={navTheme}>
+        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
+        <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
+      </NavigationContainer>
+    </PlayerProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+  },
+});

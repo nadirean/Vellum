@@ -1,102 +1,61 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { HeaderButton, Text } from '@react-navigation/elements';
-import {
-  createStaticNavigation,
-  StaticParamList,
-} from '@react-navigation/native';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Image } from 'react-native';
-import bell from '../assets/bell.png';
-import newspaper from '../assets/newspaper.png';
-import { Home } from './screens/Home';
-import { Profile } from './screens/Profile';
-import { Settings } from './screens/Settings';
-import { Updates } from './screens/Updates';
-import { NotFound } from './screens/NotFound';
+import { FolderSetup } from './screens/FolderSetup';
+import { Library } from './screens/Library';
+import { Player } from './screens/Player';
+import { theme } from '../theme';
 
-const HomeTabs = createBottomTabNavigator({
-  screens: {
-    Home: {
-      screen: Home,
-      options: {
-        title: 'Feed',
-        tabBarIcon: ({ color, size }) => (
-          <Image
-            source={newspaper}
-            tintColor={color}
-            style={{
-              width: size,
-              height: size,
-            }}
-          />
-        ),
-      },
-    },
-    Updates: {
-      screen: Updates,
-      options: {
-        tabBarIcon: ({ color, size }) => (
-          <Image
-            source={bell}
-            tintColor={color}
-            style={{
-              width: size,
-              height: size,
-            }}
-          />
-        ),
-      },
-    },
-  },
-});
+export type RootStackParamList = {
+  FolderSetup: undefined;
+  Library: undefined;
+  Player: undefined;
+};
 
-const RootStack = createNativeStackNavigator({
-  screens: {
-    HomeTabs: {
-      screen: HomeTabs,
-      options: {
-        title: 'Home',
-        headerShown: false,
-      },
-    },
-    Profile: {
-      screen: Profile,
-      linking: {
-        path: ':user(@[a-zA-Z0-9-_]+)',
-        parse: {
-          user: (value) => value.replace(/^@/, ''),
-        },
-        stringify: {
-          user: (value) => `@${value}`,
-        },
-      },
-    },
-    Settings: {
-      screen: Settings,
-      options: ({ navigation }) => ({
-        presentation: 'modal',
-        headerRight: () => (
-          <HeaderButton onPress={navigation.goBack}>
-            <Text>Close</Text>
-          </HeaderButton>
-        ),
-      }),
-    },
-    NotFound: {
-      screen: NotFound,
-      options: {
-        title: '404',
-      },
-      linking: {
-        path: '*',
-      },
-    },
-  },
-});
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export const Navigation = createStaticNavigation(RootStack);
+interface Props {
+  initialRoute: keyof RootStackParamList;
+}
 
-type RootStackParamList = StaticParamList<typeof RootStack>;
+export function RootNavigator({ initialRoute }: Props) {
+  return (
+    <Stack.Navigator
+      initialRouteName={initialRoute}
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.surface },
+        headerTintColor: theme.colors.text,
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: theme.colors.background },
+        animation: 'slide_from_right',
+      }}
+    >
+      <Stack.Screen
+        name="FolderSetup"
+        component={FolderSetup}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Library"
+        component={Library}
+        options={{
+          title: 'Library',
+          headerTitleStyle: {
+            fontSize: theme.fontSize.xl,
+            fontWeight: '700',
+            color: theme.colors.text,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Player"
+        component={Player}
+        options={{
+          title: '',
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
 
 declare global {
   namespace ReactNavigation {

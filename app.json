@@ -5,17 +5,20 @@
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "scheme": "vellum",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.f4rys.vellum"
+      "bundleIdentifier": "com.f4rys.vellum",
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0D0D12"
       },
       "package": "com.vellum"
     },
@@ -27,7 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#0D0D12",
           "image": "./assets/splash-icon.png"
         }
       ]

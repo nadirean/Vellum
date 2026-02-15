@@ -39,3 +39,7 @@ app-example
 
 # Yarn
 .yarn/
+
+# Native
+ios/
+android/
