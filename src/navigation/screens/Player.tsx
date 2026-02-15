@@ -107,6 +107,11 @@ export function Player() {
 
   const progressRatio = totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0;
 
+  // Parse author from title if it ends with [Author Name]
+  const authorMatch = currentBook.title.match(/(.+)\s*\[(.+)\]$/);
+  const displayTitle = authorMatch ? authorMatch[1].trim() : currentBook.title;
+  const author = authorMatch ? authorMatch[2].trim() : null;
+
   return (
     <ScrollView
       style={styles.container}
@@ -130,10 +135,17 @@ export function Player() {
         )}
       </View>
 
-      {/* Title & Chapter */}
+      {/* Title & Author */}
       <Text style={styles.title} numberOfLines={2}>
-        {currentBook.title}
+        {displayTitle}
       </Text>
+      {author && (
+        <Text style={styles.author} numberOfLines={1}>
+          {author}
+        </Text>
+      )}
+
+      {/* Chapter */}
       {currentBook.chapters.length > 1 && (
         <Text style={styles.chapter}>
           Chapter {currentChapterIndex + 1} of {currentBook.chapters.length}
@@ -326,6 +338,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     marginTop: theme.spacing.lg,
+  },
+  author: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.lg,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: theme.spacing.xs,
   },
   chapter: {
     color: theme.colors.textSecondary,
