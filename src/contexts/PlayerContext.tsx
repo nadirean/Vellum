@@ -13,8 +13,8 @@ import {
   AudioPlayer,
   AudioStatus,
 } from 'expo-audio';
-import { Audiobook, BookProgress } from '../types';
-import * as Storage from '../utils/storage';
+import { Audiobook } from '@consts/types';
+import * as Storage from '@utils/storage';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

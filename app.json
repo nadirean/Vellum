@@ -8,13 +8,6 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "scheme": "vellum",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.f4rys.vellum",
-      "infoPlist": {
-        "UIBackgroundModes": ["audio"]
-      }
-    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -22,8 +15,8 @@
       },
       "package": "com.vellum"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "experiments": {
+      "tsconfigPaths": true
     },
     "plugins": [
       "expo-asset",

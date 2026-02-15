@@ -1,6 +1,17 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@navigation": ["src/navigation"],
+      "@navigation/*": ["src/navigation/*"],
+      "@assets/*": ["assets/*"],
+      "@components/*": ["src/components/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@screens/*": ["src/navigation/screens/*"],
+      "@utils/*": ["src/utils/*"],
+      "@consts/*": ["src/consts/*"]
+    },
     "jsx": "react",
     "moduleResolution": "bundler",
     "strict": true

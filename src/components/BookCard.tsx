@@ -5,10 +5,9 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
-  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../theme';
+import { theme } from '@consts/theme';
 
 interface BookCardProps {
   title: string;

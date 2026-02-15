@@ -13,9 +13,9 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { theme } from '../../theme';
-import { usePlayer } from '../../contexts/PlayerContext';
-import { ProgressBar } from '../../components/ProgressBar';
+import { theme } from '@consts/theme';
+import { usePlayer } from '@contexts/PlayerContext';
+import { ProgressBar } from '@components/ProgressBar';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

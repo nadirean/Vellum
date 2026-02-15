@@ -10,9 +10,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Directory } from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../index';
-import { theme } from '../../theme';
-import * as Storage from '../../utils/storage';
+import type { RootStackParamList } from '@navigation/index';
+import { theme } from '@consts/theme';
+import * as Storage from '@utils/storage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>;
 

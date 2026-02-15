@@ -1,9 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { FolderSetup } from './screens/FolderSetup';
-import { Library } from './screens/Library';
-import { Player } from './screens/Player';
-import { theme } from '../theme';
+import { FolderSetup } from '@screens/FolderSetup';
+import { Library } from '@screens/Library';
+import { Player } from '@screens/Player';
+import { theme } from '@consts/theme';
 
 export type RootStackParamList = {
   FolderSetup: undefined;

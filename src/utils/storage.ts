@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BookProgress } from '../types';
+import { BookProgress } from '@consts/types';
 
 const KEYS = {
   BASE_FOLDER: '@vellum/baseFolder',

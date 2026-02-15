@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, StyleSheet, GestureResponderEvent } from 'react-native';
-import { theme } from '../theme';
+import { theme } from '@consts/theme';
 
 interface ProgressBarProps {
   /** 0 – 1 */

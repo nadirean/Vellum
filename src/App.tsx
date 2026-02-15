@@ -2,10 +2,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
-import { RootNavigator } from './navigation';
-import { PlayerProvider } from './contexts/PlayerContext';
-import { theme } from './theme';
-import * as Storage from './utils/storage';
+import { RootNavigator } from '@navigation';
+import { PlayerProvider } from '@contexts/PlayerContext';
+import { theme } from '@consts/theme';
+import * as Storage from '@utils/storage';
 
 SplashScreen.preventAutoHideAsync();
 

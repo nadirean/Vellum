@@ -11,14 +11,14 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../index';
+import type { RootStackParamList } from '@navigation/index';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '../../theme';
-import { Audiobook } from '../../types';
-import { usePlayer } from '../../contexts/PlayerContext';
-import { BookCard } from '../../components/BookCard';
-import { scanAudiobooks } from '../../utils/scanner';
-import * as Storage from '../../utils/storage';
+import { theme } from '@consts/theme';
+import { Audiobook } from '@consts/types';
+import { usePlayer } from '@contexts/PlayerContext';
+import { BookCard } from '@components/BookCard';
+import { scanAudiobooks } from '@utils/scanner';
+import * as Storage from '@utils/storage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
 
