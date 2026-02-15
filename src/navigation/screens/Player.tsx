@@ -181,8 +181,7 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(-60000)}
         >
-          <MaterialCommunityIcons name="rewind" size={22} color={theme.colors.textSecondary} />
-          <Text style={styles.seekLabel}>60s</Text>
+          <MaterialCommunityIcons name="rewind" size={36} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -190,7 +189,7 @@ export function Player() {
           activeOpacity={0.7}
           onPress={player.togglePlayPause}
         >
-          <MaterialCommunityIcons name={isPlaying ? 'pause' : 'play'} size={32} color={theme.colors.text} />
+          <MaterialCommunityIcons name={isPlaying ? 'pause' : 'play'} size={54} color={theme.colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -198,8 +197,7 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(60000)}
         >
-          <MaterialCommunityIcons name="fast-forward" size={22} color={theme.colors.textSecondary} />
-          <Text style={styles.seekLabel}>60s</Text>
+          <MaterialCommunityIcons name="fast-forward" size={36} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
 
@@ -400,23 +398,15 @@ const styles = StyleSheet.create({
   seekBtn: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.surfaceLight,
-  },
-  seekIcon: {
-    fontSize: 22,
-  },
-  seekLabel: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.fontSize.xs,
-    marginTop: 2,
-  },
-  playBtn: {
     width: 80,
     height: 80,
     borderRadius: 40,
+    backgroundColor: theme.colors.surfaceLight,
+  },
+  playBtn: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: theme.colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -425,9 +415,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
-  },
-  playIcon: {
-    fontSize: 32,
   },
 
   /* Chapter list */

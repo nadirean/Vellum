@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
   },
   cardPlaying: {
-    borderColor: theme.colors.secondary,
+    borderColor: theme.colors.primaryLight,
     borderWidth: 2,
   },
   coverContainer: {
