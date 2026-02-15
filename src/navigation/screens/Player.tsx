@@ -145,13 +145,17 @@ export function Player() {
         </Text>
       )}
 
-      {/* Chapter */}
-      {currentBook.chapters.length > 1 && (
-        <Text style={styles.chapter}>
+      {/* Chapter Information */}
+      <View style={styles.chapterContainer}>
+        <Text style={styles.chapterCount}>
           Chapter {currentChapterIndex + 1} of {currentBook.chapters.length}
-          {chapterName ? ` · ${chapterName}` : ''}
         </Text>
-      )}
+        {chapterName && (
+          <Text style={styles.chapterName} numberOfLines={1}>
+            {chapterName}
+          </Text>
+        )}
+      </View>
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
@@ -346,11 +350,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.xs,
   },
-  chapter: {
+  chapterContainer: {
+    marginTop: theme.spacing.xl,
+    alignItems: 'center',
+  },
+  chapterCount: {
+    color: theme.colors.textMuted,
+    fontSize: theme.fontSize.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  chapterName: {
     color: theme.colors.textSecondary,
     fontSize: theme.fontSize.md,
-    marginTop: theme.spacing.xs,
-    textAlign: 'center',
+    fontWeight: '500',
+    marginTop: 4,
   },
 
   /* Progress */
