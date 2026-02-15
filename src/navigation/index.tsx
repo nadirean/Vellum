@@ -38,7 +38,7 @@ export function RootNavigator({ initialRoute }: Props) {
         name="Library"
         component={Library}
         options={{
-          title: 'Library',
+          title: 'Vellum',
           headerTitleStyle: {
             fontSize: theme.fontSize.xl,
             fontWeight: '700',

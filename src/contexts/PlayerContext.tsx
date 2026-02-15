@@ -334,7 +334,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       startPosition = 0;
     }
 
-    await loadChapterAudio(book, startChapter, startPosition, true);
+    await loadChapterAudio(book, startChapter, startPosition, false);
     setIsLoading(false);
   };
 

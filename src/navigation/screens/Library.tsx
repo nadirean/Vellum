@@ -33,10 +33,14 @@ export function Library() {
 
   const loadBooks = useCallback(async () => {
     const folder = await Storage.getBaseFolder();
-    if (!folder) return;
+    if (!folder) {
+      setIsScanning(false);
+      return;
+    }
 
     // Only re‑scan when folder changed
     if (folder === lastFolder && books.length > 0) {
+      setIsScanning(false);
       await refreshProgress();
       return;
     }
