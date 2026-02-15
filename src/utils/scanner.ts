@@ -109,7 +109,12 @@ export async function scanAudiobooks(baseFolderUri: string): Promise<Audiobook[]
 function scanSingleBook(dir: Directory): Audiobook {
   const chapters: AudioChapter[] = [];
   const images: { uri: string; name: string }[] = [];
-  const title = dir.name;
+  const rawTitle = dir.name;
+
+  // Pattern used in Player.tsx: Title [Author]
+  const authorMatch = rawTitle.match(/(.+)\s*\[(.+)\]$/);
+  const title = authorMatch ? authorMatch[1].trim() : rawTitle;
+  const author = authorMatch ? authorMatch[2].trim() : 'Unknown Author';
 
   try {
     const contents = dir.list();
@@ -125,15 +130,16 @@ function scanSingleBook(dir: Directory): Audiobook {
       }
     }
   } catch (error) {
-    console.error(`Error scanning book "${title}":`, error);
+    console.error(`Error scanning book "${rawTitle}":`, error);
   }
 
   // Sort chapters using natural ordering
   chapters.sort((a, b) => naturalCompare(a.filename, b.filename));
 
   return {
-    id: title,
+    id: rawTitle,
     title,
+    author,
     folderUri: dir.uri,
     chapters,
     coverUri: selectCoverImage(images),

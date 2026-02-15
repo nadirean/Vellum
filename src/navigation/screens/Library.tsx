@@ -110,6 +110,7 @@ export function Library() {
   const renderBook = ({ item }: { item: Audiobook }) => (
     <BookCard
       title={item.title}
+      author={item.author}
       coverUri={item.coverUri}
       progressPercent={progressMap[item.id] ?? null}
       isPlaying={player.currentBook?.id === item.id && player.isPlaying}

@@ -11,6 +11,7 @@ import { theme } from '@consts/theme';
 
 interface BookCardProps {
   title: string;
+  author: string;
   coverUri: string | null;
   progressPercent: number | null; // 0–100 or null if not started
   isPlaying: boolean;
@@ -19,12 +20,7 @@ interface BookCardProps {
 
 const CARD_GAP = theme.spacing.md;
 
-export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress }: BookCardProps) {
-  // Parse author from title if it ends with [Author Name]
-  const authorMatch = title.match(/(.+)\s*\[(.+)\]$/);
-  const displayTitle = authorMatch ? authorMatch[1].trim() : title;
-  const author = authorMatch ? authorMatch[2].trim() : null;
-
+export function BookCard({ title, author, coverUri, progressPercent, isPlaying, onPress }: BookCardProps) {
   return (
     <TouchableOpacity
       style={[styles.card, isPlaying && styles.cardPlaying]}
@@ -48,9 +44,9 @@ export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress 
 
       <View style={styles.infoContainer}>
         <Text style={styles.title} numberOfLines={1}>
-          {displayTitle}
+          {title}
         </Text>
-        {author && (
+        {author && author !== 'Unknown Author' && (
           <Text style={styles.author} numberOfLines={1}>
             {author}
           </Text>

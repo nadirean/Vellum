@@ -6,6 +6,7 @@ export interface AudioChapter {
 export interface Audiobook {
   id: string;
   title: string;
+  author: string;
   folderUri: string;
   chapters: AudioChapter[];
   coverUri: string | null;

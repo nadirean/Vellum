@@ -107,10 +107,9 @@ export function Player() {
 
   const progressRatio = totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0;
 
-  // Parse author from title if it ends with [Author Name]
-  const authorMatch = currentBook.title.match(/(.+)\s*\[(.+)\]$/);
-  const displayTitle = authorMatch ? authorMatch[1].trim() : currentBook.title;
-  const author = authorMatch ? authorMatch[2].trim() : null;
+  // Use the parsed title and author from currentBook
+  const displayTitle = currentBook.title;
+  const author = currentBook.author;
 
   return (
     <ScrollView
@@ -151,7 +150,7 @@ export function Player() {
       <Text style={styles.title} numberOfLines={2}>
         {displayTitle}
       </Text>
-      {author && (
+      {author && author !== 'Unknown Author' && (
         <Text style={styles.author} numberOfLines={1}>
           {author}
         </Text>

@@ -15,6 +15,8 @@ import {
 } from 'expo-audio';
 import { Audiobook } from '@consts/types';
 import * as Storage from '@utils/storage';
+import * as NotificationUtils from '@utils/notifications';
+import * as Notifications from 'expo-notifications';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -436,6 +438,39 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
   const timeLeftMs = Math.max(0, totalBookDurationMs - bookPositionMs);
   const timeLeftWithTempoMs = rate > 0 ? timeLeftMs / rate : timeLeftMs;
+
+  /* ---- notifications ---- */
+  useEffect(() => {
+    NotificationUtils.setupNotifications();
+
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const actionId = response.actionIdentifier;
+      if (actionId === NotificationUtils.PlaybackAction.TOGGLE) {
+        togglePlayPause();
+      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_BACK) {
+        seekRelative(-15000);
+      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_FORWARD) {
+        seekRelative(15000);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [togglePlayPause, seekRelative]);
+
+  useEffect(() => {
+    if (currentBook && !isLoading) {
+      NotificationUtils.updatePlaybackNotification(
+        currentBook.title,
+        currentBook.author,
+        isPlaying,
+        bookProgress,
+      );
+    } else if (!currentBook) {
+      NotificationUtils.dismissPlaybackNotification();
+    }
+  }, [currentBook?.id, isPlaying, Math.floor(bookProgress), isLoading]);
 
   /* ---- context value ---- */
   const value: PlayerContextType = {
