@@ -11,7 +11,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0D0D12"
+        "backgroundColor": "#000000"
       },
       "package": "com.vellum"
     },
@@ -23,7 +23,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0D0D12",
+          "backgroundColor": "#000000",
           "image": "./assets/splash-icon.png"
         }
       ]

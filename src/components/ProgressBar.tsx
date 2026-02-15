@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.primaryLight,
     marginLeft: -8,
     top: -5,
     elevation: 3,

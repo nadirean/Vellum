@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     marginRight: theme.spacing.sm,
   },
   chapterItemTextActive: {
-    color: theme.colors.primary,
+    color: theme.colors.secondary,
     fontWeight: '600',
   },
   chapterDur: {
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.surfaceHighlight,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.lg,
     width: 240,
