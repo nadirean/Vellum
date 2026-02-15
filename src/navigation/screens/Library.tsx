@@ -12,6 +12,7 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../index';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../../theme';
 import { Audiobook } from '../../types';
 import { usePlayer } from '../../contexts/PlayerContext';
@@ -90,7 +91,7 @@ export function Library() {
           onPress={() => navigation.navigate('FolderSetup')}
           style={styles.headerBtn}
         >
-          <Text style={styles.headerBtnText}>📂</Text>
+          <MaterialCommunityIcons name="folder" size={22} color={theme.colors.text} />
         </TouchableOpacity>
       ),
     });
@@ -126,7 +127,7 @@ export function Library() {
     return (
       <View style={styles.centered}>
         <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
-        <Text style={styles.emptyIcon}>📭</Text>
+        <MaterialCommunityIcons name="inbox" size={56} color={theme.colors.textSecondary} style={styles.emptyIcon} />
         <Text style={styles.emptyTitle}>No audiobooks found</Text>
         <Text style={styles.emptyDesc}>
           Make sure your audiobooks are in sub‑folders inside the selected

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   StatusBar,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Directory } from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -39,7 +40,7 @@ export function FolderSetup() {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} />
 
       <View style={styles.content}>
-        <Text style={styles.icon}>📚</Text>
+        <MaterialCommunityIcons name="book-open-variant" size={64} color={theme.colors.primary} style={styles.icon} />
 
         <Text style={styles.heading}>Welcome to Vellum</Text>
 

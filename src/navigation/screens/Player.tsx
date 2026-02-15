@@ -11,6 +11,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../theme';
 import { usePlayer } from '../../contexts/PlayerContext';
@@ -124,7 +125,7 @@ export function Player() {
           />
         ) : (
           <View style={styles.coverPlaceholder}>
-            <Text style={styles.placeholderEmoji}>🎧</Text>
+            <MaterialCommunityIcons name="headphones" size={72} color={theme.colors.textSecondary} />
           </View>
         )}
       </View>
@@ -168,7 +169,7 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(-60000)}
         >
-          <Text style={styles.seekIcon}>⏪</Text>
+          <MaterialCommunityIcons name="rewind" size={22} color={theme.colors.textSecondary} />
           <Text style={styles.seekLabel}>60s</Text>
         </TouchableOpacity>
 
@@ -177,7 +178,7 @@ export function Player() {
           activeOpacity={0.7}
           onPress={player.togglePlayPause}
         >
-          <Text style={styles.playIcon}>{isPlaying ? '⏸' : '▶️'}</Text>
+          <MaterialCommunityIcons name={isPlaying ? 'pause' : 'play'} size={32} color={theme.colors.text} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -185,7 +186,7 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(60000)}
         >
-          <Text style={styles.seekIcon}>⏩</Text>
+          <MaterialCommunityIcons name="fast-forward" size={22} color={theme.colors.textSecondary} />
           <Text style={styles.seekLabel}>60s</Text>
         </TouchableOpacity>
       </View>

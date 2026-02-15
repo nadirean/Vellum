@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { theme } from '../theme';
 
 interface BookCardProps {
@@ -33,12 +34,12 @@ export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress 
           <Image source={{ uri: coverUri }} style={styles.cover} resizeMode="cover" />
         ) : (
           <View style={styles.coverPlaceholder}>
-            <Text style={styles.placeholderIcon}>🎧</Text>
+            <MaterialCommunityIcons name="headphones" size={48} color={theme.colors.textSecondary} />
           </View>
         )}
         {isPlaying && (
           <View style={styles.playingBadge}>
-            <Text style={styles.playingText}>▶</Text>
+            <MaterialCommunityIcons name="play" size={12} color={theme.colors.text} />
           </View>
         )}
       </View>
