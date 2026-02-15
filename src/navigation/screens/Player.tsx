@@ -162,13 +162,10 @@ export function Player() {
         <ProgressBar progress={progressRatio} onSeek={handleProgressSeek} />
 
         <View style={styles.timeRow}>
-          <Text style={[styles.timeText, styles.timeTextLeft]} numberOfLines={1}>
-            {formatTime(bookPositionMs)}
+          <Text style={styles.timeText} numberOfLines={1}>
+            {formatTime(bookPositionMs)} ({bookProgress.toFixed(1)}%)
           </Text>
-          <Text style={[styles.timeText, styles.timeTextCenter]} numberOfLines={1}>
-            {bookProgress.toFixed(1)}%
-          </Text>
-          <Text style={[styles.timeText, styles.timeTextRight]} numberOfLines={1}>
+          <Text style={styles.timeText} numberOfLines={1}>
             -{formatTime(timeLeftMs)}
             {rate !== 1.0 && ` (-${formatTime(timeLeftWithTempoMs)})`}
           </Text>
@@ -371,26 +368,14 @@ const styles = StyleSheet.create({
   },
   timeRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    position: 'relative',
-    minHeight: 24,
+    marginTop: 4,
   },
   timeText: {
     color: theme.colors.textSecondary,
     fontSize: theme.fontSize.sm,
     fontVariant: ['tabular-nums'],
-  },
-  timeTextLeft: {
-    position: 'absolute',
-    left: 0,
-  },
-  timeTextCenter: {
-    textAlign: 'center',
-  },
-  timeTextRight: {
-    position: 'absolute',
-    right: 0,
   },
 
   /* Controls */
