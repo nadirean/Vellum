@@ -59,17 +59,30 @@ export function Player() {
     chapterDurations,
   } = player;
 
-  // Configure header with rate selector
+  // Configure header with rate selector and chapters
   useEffect(() => {
     navigation.setOptions({
       title: '',
       headerRight: () => (
-        <TouchableOpacity
-          onPress={() => setShowRateModal(true)}
-          style={styles.rateHeaderBtn}
-        >
-          <Text style={styles.rateHeaderText}>{rate.toFixed(rate % 1 === 0 ? 1 : 2)}x</Text>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Chapters')}
+            style={styles.headerBtn}
+          >
+            <MaterialCommunityIcons 
+              name="format-list-bulleted" 
+              size={24} 
+              color={theme.colors.primaryLight} 
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setShowRateModal(true)}
+            style={styles.headerBtn}
+          >
+            <Text style={styles.rateHeaderText}>{rate.toFixed(rate % 1 === 0 ? 1 : 2)}x</Text>
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation, rate]);
@@ -200,35 +213,6 @@ export function Player() {
           <MaterialCommunityIcons name="fast-forward" size={36} color={theme.colors.textSecondary} />
         </TouchableOpacity>
       </View>
-
-      {/* Chapter list (collapsible / scrollable) */}
-      {currentBook.chapters.length > 1 && (
-        <View style={styles.chapterSection}>
-          <Text style={styles.chapterSectionTitle}>Chapters</Text>
-          {currentBook.chapters.map((ch, idx) => {
-            const isCurrent = idx === currentChapterIndex;
-            const dur = chapterDurations[idx] ?? 0;
-            return (
-              <TouchableOpacity
-                key={idx}
-                style={[styles.chapterItem, isCurrent && styles.chapterItemActive]}
-                onPress={() => player.goToChapter(idx)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[styles.chapterItemText, isCurrent && styles.chapterItemTextActive]}
-                  numberOfLines={1}
-                >
-                  {idx + 1}. {ch.filename.replace(/\.\w+$/, '')}
-                </Text>
-                {dur > 0 && (
-                  <Text style={styles.chapterDur}>{formatTime(dur)}</Text>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
 
       {/* Rate Modal */}
       <Modal
@@ -417,50 +401,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
   },
 
-  /* Chapter list */
-  chapterSection: {
-    width: '100%',
-    marginTop: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.md,
-  },
-  chapterSectionTitle: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.fontSize.sm,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: theme.spacing.sm,
-  },
-  chapterItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
-  },
-  chapterItemActive: {
-    backgroundColor: theme.colors.surfaceHighlight,
-  },
-  chapterItemText: {
-    color: theme.colors.textSecondary,
-    fontSize: theme.fontSize.md,
-    flex: 1,
-    marginRight: theme.spacing.sm,
-  },
-  chapterItemTextActive: {
-    color: theme.colors.secondary,
-    fontWeight: '600',
-  },
-  chapterDur: {
-    color: theme.colors.textMuted,
-    fontSize: theme.fontSize.sm,
-    fontVariant: ['tabular-nums'],
-  },
-
-  /* Rate modal */
+  /* Chapter list (removed from here, styles kept for other uses if needed or cleaned up) */
   modalOverlay: {
     flex: 1,
     backgroundColor: theme.colors.overlay,
@@ -500,12 +441,21 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  /* Header rate button */
-  rateHeaderBtn: {
+  /* Header buttons */
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  headerBtn: {
     backgroundColor: theme.colors.surfaceLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: theme.borderRadius.sm,
+    minWidth: 44,
+    height: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   rateHeaderText: {
     color: theme.colors.primaryLight,

@@ -3,12 +3,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { FolderSetup } from '@screens/FolderSetup';
 import { Library } from '@screens/Library';
 import { Player } from '@screens/Player';
+import { Chapters } from '@screens/Chapters';
 import { theme } from '@consts/theme';
 
 export type RootStackParamList = {
   FolderSetup: undefined;
   Library: undefined;
   Player: undefined;
+  Chapters: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -51,6 +53,18 @@ export function RootNavigator({ initialRoute }: Props) {
         component={Player}
         options={{
           title: '',
+        }}
+      />
+      <Stack.Screen
+        name="Chapters"
+        component={Chapters}
+        options={{
+          title: 'Chapters',
+          headerTitleStyle: {
+            fontSize: theme.fontSize.lg,
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
         }}
       />
     </Stack.Navigator>
