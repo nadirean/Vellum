@@ -16,4 +16,5 @@ export interface BookProgress {
   positionMs: number;
   chapterDurations: number[];
   lastPlayedAt: number;
+  rate?: number;
 }

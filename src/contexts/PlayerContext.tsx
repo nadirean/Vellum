@@ -170,6 +170,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         positionMs: positionRef.current,
         chapterDurations: durationsRef.current,
         lastPlayedAt: Date.now(),
+        rate: rateRef.current,
       });
     };
     const id = setInterval(save, 5000);
@@ -326,6 +327,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
 
     durationsRef.current = durations;
     setChapterDurations(durations);
+
+    const startRate = progress?.rate ?? 1.0;
+    rateRef.current = startRate;
+    setRateState(startRate);
 
     let startChapter = progress?.currentChapterIndex ?? 0;
     let startPosition = progress?.positionMs ?? 0;
