@@ -21,6 +21,11 @@ interface BookCardProps {
 const CARD_GAP = theme.spacing.md;
 
 export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress }: BookCardProps) {
+  // Parse author from title if it ends with [Author Name]
+  const authorMatch = title.match(/(.+)\s*\[(.+)\]$/);
+  const displayTitle = authorMatch ? authorMatch[1].trim() : title;
+  const author = authorMatch ? authorMatch[2].trim() : null;
+
   return (
     <TouchableOpacity
       style={[styles.card, isPlaying && styles.cardPlaying]}
@@ -43,9 +48,14 @@ export function BookCard({ title, coverUri, progressPercent, isPlaying, onPress 
       </View>
 
       <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={2}>
-          {title}
+        <Text style={styles.title} numberOfLines={1}>
+          {displayTitle}
         </Text>
+        {author && (
+          <Text style={styles.author} numberOfLines={1}>
+            {author}
+          </Text>
+        )}
 
         {progressPercent !== null && progressPercent > 0 && (
           <View style={styles.progressContainer}>
@@ -120,12 +130,17 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.fontSize.md,
     fontWeight: '600',
-    marginBottom: theme.spacing.xs,
+  },
+  author: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.sm,
+    marginTop: 2,
   },
   progressContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: theme.spacing.xs,
   },
   progressBg: {
     flex: 1,
