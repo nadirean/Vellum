@@ -120,6 +120,18 @@ export function Player() {
     >
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
 
+      {/* Chapter Information */}
+      <View style={styles.chapterContainer}>
+        <Text style={styles.chapterCount}>
+          Chapter {currentChapterIndex + 1} of {currentBook.chapters.length}
+        </Text>
+        {chapterName && (
+          <Text style={styles.chapterName} numberOfLines={1}>
+            {chapterName}
+          </Text>
+        )}
+      </View>
+
       {/* Cover Art */}
       <View style={styles.coverWrapper}>
         {currentBook.coverUri ? (
@@ -145,17 +157,8 @@ export function Player() {
         </Text>
       )}
 
-      {/* Chapter Information */}
-      <View style={styles.chapterContainer}>
-        <Text style={styles.chapterCount}>
-          Chapter {currentChapterIndex + 1} of {currentBook.chapters.length}
-        </Text>
-        {chapterName && (
-          <Text style={styles.chapterName} numberOfLines={1}>
-            {chapterName}
-          </Text>
-        )}
-      </View>
+      {/* Spacer to push controls downwards */}
+      <View style={styles.spacer} />
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
@@ -276,9 +279,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   contentContainer: {
+    flexGrow: 1,
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.xxl,
+    paddingBottom: 100,
+  },
+  spacer: {
+    flex: 1,
+    minHeight: theme.spacing.md,
   },
   centered: {
     flex: 1,
@@ -303,11 +311,13 @@ const styles = StyleSheet.create({
 
   /* Cover */
   coverWrapper: {
-    width: 260,
-    height: 260,
-    borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
-    marginTop: theme.spacing.lg,
+    width: 272,
+    height: 272,
+    borderRadius: theme.borderRadius.lg + 4,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    marginTop: theme.spacing.xl,
     backgroundColor: theme.colors.surfaceLight,
     elevation: 8,
     shadowColor: '#000',
@@ -318,12 +328,14 @@ const styles = StyleSheet.create({
   cover: {
     width: '100%',
     height: '100%',
+    borderRadius: theme.borderRadius.lg,
   },
   coverPlaceholder: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: theme.colors.surfaceLight,
+    borderRadius: theme.borderRadius.lg,
   },
   placeholderEmoji: {
     fontSize: 72,
@@ -345,7 +357,7 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   chapterContainer: {
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.md,
     alignItems: 'center',
   },
   chapterCount: {
@@ -364,7 +376,7 @@ const styles = StyleSheet.create({
   /* Progress */
   progressSection: {
     width: '100%',
-    marginTop: theme.spacing.xl,
+    marginTop: theme.spacing.md,
   },
   timeRow: {
     flexDirection: 'row',

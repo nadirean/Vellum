@@ -80,11 +80,12 @@ const styles = StyleSheet.create({
     marginBottom: CARD_GAP,
     alignItems: 'center',
     padding: theme.spacing.sm,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
   },
   cardPlaying: {
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.secondary,
     borderWidth: 2,
-    padding: theme.spacing.sm - 2,
   },
   coverContainer: {
     width: 60,
