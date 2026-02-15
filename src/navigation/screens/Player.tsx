@@ -162,19 +162,16 @@ export function Player() {
         <ProgressBar progress={progressRatio} onSeek={handleProgressSeek} />
 
         <View style={styles.timeRow}>
-          <Text style={styles.timeText}>{formatTime(bookPositionMs)}</Text>
-          <Text style={styles.timeText}>-{formatTime(timeLeftMs)}</Text>
-        </View>
-
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>
-            {bookProgress.toFixed(1)}% complete
+          <Text style={[styles.timeText, styles.timeTextLeft]} numberOfLines={1}>
+            {formatTime(bookPositionMs)}
           </Text>
-          {rate !== 1.0 && (
-            <Text style={styles.statText}>
-              at {rate.toFixed(rate % 1 === 0 ? 1 : 2)}x: -{formatTime(timeLeftWithTempoMs)} left
-            </Text>
-          )}
+          <Text style={[styles.timeText, styles.timeTextCenter]} numberOfLines={1}>
+            {bookProgress.toFixed(1)}%
+          </Text>
+          <Text style={[styles.timeText, styles.timeTextRight]} numberOfLines={1}>
+            -{formatTime(timeLeftMs)}
+            {rate !== 1.0 && ` (-${formatTime(timeLeftWithTempoMs)})`}
+          </Text>
         </View>
       </View>
 
@@ -374,21 +371,26 @@ const styles = StyleSheet.create({
   },
   timeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    minHeight: 24,
   },
   timeText: {
     color: theme.colors.textSecondary,
     fontSize: theme.fontSize.sm,
     fontVariant: ['tabular-nums'],
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: theme.spacing.xs,
+  timeTextLeft: {
+    position: 'absolute',
+    left: 0,
   },
-  statText: {
-    color: theme.colors.textMuted,
-    fontSize: theme.fontSize.xs,
+  timeTextCenter: {
+    textAlign: 'center',
+  },
+  timeTextRight: {
+    position: 'absolute',
+    right: 0,
   },
 
   /* Controls */
