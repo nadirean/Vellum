@@ -173,14 +173,22 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         chapterDurations: durationsRef.current,
         lastPlayedAt: Date.now(),
         rate: rateRef.current,
+      }).catch((err) => {
+        console.error('Failed to persist progress for book:', bookRef.current?.id, err);
       });
     };
+    
+    // Save immediately when paused
+    if (!isPlaying) {
+      save();
+    }
+    
     const id = setInterval(save, 5000);
     return () => {
       clearInterval(id);
       save(); // save on cleanup too
     };
-  }, [currentBook?.id, isLoading]);
+  }, [currentBook?.id, isLoading, isPlaying]);
 
   /* ---- core: load a single chapter's audio ---- */
   const loadChapterAudio = useCallback(async (
@@ -308,6 +316,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const loadBook = async (book: Audiobook) => {
     // Already loaded – skip
     if (bookRef.current?.id === book.id && !isLoading) return;
+
+    // CRITICAL: Save the current book's progress immediately before switching
+    if (bookRef.current) {
+      try {
+        await Storage.setBookProgress(bookRef.current.id, {
+          currentChapterIndex: chapterIdxRef.current,
+          positionMs: positionRef.current,
+          chapterDurations: durationsRef.current,
+          lastPlayedAt: Date.now(),
+          rate: rateRef.current,
+        });
+      } catch (err) {
+        console.error('Failed to save progress for current book before switching:', err);
+      }
+    }
 
     setIsLoading(true);
     setCurrentBook(book);
