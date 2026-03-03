@@ -52,6 +52,8 @@ export function Player() {
   const [showRateModal, setShowRateModal] = useState(false);
   const [showFocusModal, setShowFocusModal] = useState(false);
   const [coverFocusY, setCoverFocusY] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragProgress, setDragProgress] = useState(0);
 
   const {
     currentBook,
@@ -112,9 +114,18 @@ export function Player() {
   }, [navigation, rate]);
 
   const handleProgressSeek = (ratio: number) => {
+    setDragProgress(ratio);
     if (totalBookDurationMs > 0) {
       player.seekToBookPosition(ratio * totalBookDurationMs);
     }
+  };
+
+  const handleDragStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   if (!currentBook) {
@@ -142,7 +153,7 @@ export function Player() {
     ? chapter.filename.replace(/\.\w+$/, '')
     : '';
 
-  const progressRatio = totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0;
+  const progressRatio = isDragging ? dragProgress : (totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0);
 
   // Use the parsed title and author from currentBook
   const displayTitle = currentBook.title;
@@ -203,7 +214,12 @@ export function Player() {
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
-        <ProgressBar progress={progressRatio} onSeek={handleProgressSeek} />
+        <ProgressBar 
+          progress={progressRatio} 
+          onSeek={handleProgressSeek}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        />
 
         <View style={styles.timeRow}>
           <Text style={styles.timeText} numberOfLines={1}>
