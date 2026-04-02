@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  StatusBar,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Directory } from 'expo-file-system';
@@ -37,16 +36,14 @@ export function FolderSetup() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} />
-
       <View style={styles.content}>
-        <MaterialCommunityIcons name="book-open-variant" size={64} color={theme.colors.primary} style={styles.icon} />
+        <MaterialCommunityIcons name="book-open-variant" color={theme.colors.primary} style={styles.icon} />
 
         <Text style={styles.heading}>Welcome to Vellum</Text>
 
         <Text style={styles.description}>
           Your local audiobook player. To get started, choose the folder where
-          your audiobooks are stored. Each sub‑folder will be treated as a
+          your audiobooks are stored. Each sub-folder will be treated as a
           separate audiobook.
         </Text>
 
@@ -55,12 +52,9 @@ export function FolderSetup() {
           activeOpacity={0.8}
           onPress={handleSelectFolder}
         >
-          <Text style={styles.buttonText}>Choose Audiobooks Folder</Text>
+          <Text style={styles.buttonText}>CHOOSE FOLDER</Text>
         </TouchableOpacity>
 
-        <Text style={styles.hint}>
-          You can change the folder later from the library screen.
-        </Text>
       </View>
     </View>
   );
@@ -69,42 +63,35 @@ export function FolderSetup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
+    padding: 48,
   },
   content: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.xl,
     alignItems: 'center',
     width: '100%',
     maxWidth: 400,
   },
   icon: {
     fontSize: 64,
-    marginBottom: theme.spacing.lg,
+    marginBottom: 24,
   },
   heading: {
     fontSize: theme.fontSize.title,
     fontWeight: '700',
     color: theme.colors.text,
-    marginBottom: theme.spacing.md,
-    textAlign: 'center',
+    marginBottom: 16,
   },
   description: {
-    fontSize: theme.fontSize.md,
     color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: theme.spacing.xl,
+    marginBottom: 32,
   },
   button: {
     backgroundColor: theme.colors.primary,
     paddingVertical: 14,
-    paddingHorizontal: theme.spacing.xl,
-    borderRadius: theme.borderRadius.xl,
+    paddingHorizontal: 32,
+    borderRadius: 32,
     width: '100%',
     alignItems: 'center',
   },
@@ -112,11 +99,5 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.fontSize.lg,
     fontWeight: '700',
-  },
-  hint: {
-    marginTop: theme.spacing.lg,
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-  },
+  }
 });

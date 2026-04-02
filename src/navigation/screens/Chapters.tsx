@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StatusBar,
 } from 'react-native';
 import { theme } from '@consts/theme';
 import { usePlayer } from '@contexts/PlayerContext';
@@ -31,9 +30,8 @@ export function Chapters() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.headerTitle}>Chapters</Text>
+        <Text style={styles.headerTitle}>CHAPTERS</Text>
         <Text style={styles.bookTitle} numberOfLines={1}>{currentBook.title}</Text>
 
         <View style={styles.listContainer}>
@@ -74,17 +72,14 @@ export function Chapters() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
   },
   contentContainer: {
-    padding: theme.spacing.lg,
+    padding: 24,
   },
   headerTitle: {
     color: theme.colors.textMuted,
     fontSize: theme.fontSize.sm,
     fontWeight: '700',
-    textTransform: 'uppercase',
     letterSpacing: 1.5,
     marginBottom: 4,
   },
@@ -92,7 +87,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.fontSize.xl,
     fontWeight: '700',
-    marginBottom: theme.spacing.xl,
+    marginBottom: 32,
   },
   listContainer: {
     gap: 12,
@@ -101,10 +96,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surfaceLight,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'transparent',
   },
   chapterItemActive: {
     backgroundColor: theme.colors.surfaceHighlight,
@@ -117,7 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: theme.spacing.md,
+    marginRight: 16,
   },
   chapterNumber: {
     color: theme.colors.textSecondary,
@@ -128,7 +122,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryLight,
   },
   chapterContent: {
-    flex: 1,
   },
   chapterText: {
     color: theme.colors.text,
@@ -138,11 +131,9 @@ const styles = StyleSheet.create({
   },
   chapterTextActive: {
     color: theme.colors.primaryLight,
-    fontWeight: '700',
   },
   chapterDur: {
     color: theme.colors.textMuted,
     fontSize: theme.fontSize.xs,
-    fontVariant: ['tabular-nums'],
   },
 });
