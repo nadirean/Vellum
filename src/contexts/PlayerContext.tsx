@@ -7,6 +7,7 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
+import { AppState } from 'react-native';
 import {
   createAudioPlayer,
   setAudioModeAsync,
@@ -136,6 +137,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const isPlayingRef = useRef(false);
   const positionRef = useRef(0);
   const loadingChapterRef = useRef(false);
+  const isLoadingRef = useRef(false);
 
   // Keep refs in sync
   bookRef.current = currentBook;
@@ -144,6 +146,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   durationsRef.current = chapterDurations;
   isPlayingRef.current = isPlaying;
   positionRef.current = positionMs;
+  isLoadingRef.current = isLoading;
 
   /* ---- audio mode ---- */
   useEffect(() => {
@@ -163,17 +166,23 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /* ---- persist progress every 5 s & on pause ---- */
+  const persistCurrentProgress = useCallback(async () => {
+    const book = bookRef.current;
+    if (!book || isLoadingRef.current) return;
+
+    await Storage.setBookProgress(book.id, {
+      currentChapterIndex: chapterIdxRef.current,
+      positionMs: positionRef.current,
+      chapterDurations: durationsRef.current,
+      lastPlayedAt: Date.now(),
+      rate: rateRef.current,
+    });
+  }, []);
+
   useEffect(() => {
     if (!currentBook || isLoading) return;
     const save = () => {
-      if (!bookRef.current) return;
-      Storage.setBookProgress(bookRef.current.id, {
-        currentChapterIndex: chapterIdxRef.current,
-        positionMs: positionRef.current,
-        chapterDurations: durationsRef.current,
-        lastPlayedAt: Date.now(),
-        rate: rateRef.current,
-      }).catch((err) => {
+      persistCurrentProgress().catch((err) => {
         console.error('Failed to persist progress for book:', bookRef.current?.id, err);
       });
     };
@@ -188,7 +197,21 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       clearInterval(id);
       save(); // save on cleanup too
     };
-  }, [currentBook?.id, isLoading, isPlaying]);
+  }, [currentBook?.id, isLoading, isPlaying, persistCurrentProgress]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'background' || nextState === 'inactive') {
+        persistCurrentProgress().catch((err) => {
+          console.error('Failed to persist progress while app was backgrounding:', err);
+        });
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [persistCurrentProgress]);
 
   /* ---- core: load a single chapter's audio ---- */
   const loadChapterAudio = useCallback(async (
@@ -320,52 +343,51 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     // CRITICAL: Save the current book's progress immediately before switching
     if (bookRef.current) {
       try {
-        await Storage.setBookProgress(bookRef.current.id, {
-          currentChapterIndex: chapterIdxRef.current,
-          positionMs: positionRef.current,
-          chapterDurations: durationsRef.current,
-          lastPlayedAt: Date.now(),
-          rate: rateRef.current,
-        });
+        await persistCurrentProgress();
       } catch (err) {
         console.error('Failed to save progress for current book before switching:', err);
       }
     }
 
+    isLoadingRef.current = true;
     setIsLoading(true);
     setCurrentBook(book);
     bookRef.current = book;
 
-    // Check stored progress
-    const progress = await Storage.getBookProgress(book.id);
+    try {
+      // Check stored progress
+      const progress = await Storage.getBookProgress(book.id);
 
-    let durations: number[];
-    if (
-      progress &&
-      progress.chapterDurations.length === book.chapters.length &&
-      progress.chapterDurations.every((d) => d > 0)
-    ) {
-      durations = progress.chapterDurations;
-    } else {
-      durations = await scanChapterDurations(book);
+      let durations: number[];
+      if (
+        progress &&
+        progress.chapterDurations.length === book.chapters.length &&
+        progress.chapterDurations.every((d) => d > 0)
+      ) {
+        durations = progress.chapterDurations;
+      } else {
+        durations = await scanChapterDurations(book);
+      }
+
+      durationsRef.current = durations;
+      setChapterDurations(durations);
+
+      const startRate = progress?.rate ?? 1.0;
+      rateRef.current = startRate;
+      setRateState(startRate);
+
+      let startChapter = progress?.currentChapterIndex ?? 0;
+      let startPosition = progress?.positionMs ?? 0;
+      if (startChapter >= book.chapters.length) {
+        startChapter = 0;
+        startPosition = 0;
+      }
+
+      await loadChapterAudio(book, startChapter, startPosition, false);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoading(false);
     }
-
-    durationsRef.current = durations;
-    setChapterDurations(durations);
-
-    const startRate = progress?.rate ?? 1.0;
-    rateRef.current = startRate;
-    setRateState(startRate);
-
-    let startChapter = progress?.currentChapterIndex ?? 0;
-    let startPosition = progress?.positionMs ?? 0;
-    if (startChapter >= book.chapters.length) {
-      startChapter = 0;
-      startPosition = 0;
-    }
-
-    await loadChapterAudio(book, startChapter, startPosition, false);
-    setIsLoading(false);
   };
 
   const togglePlayPause = () => {

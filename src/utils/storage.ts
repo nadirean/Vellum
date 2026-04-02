@@ -9,8 +9,14 @@ const KEYS = {
 
 /* ---- In-memory cache to avoid constant disk reads ---- */
 let progressCache: Record<string, BookProgress> | null = null;
-let isSaving = false;
-const pendingUpdates: Record<string, BookProgress> = {};
+let nextProgressVersion = 0;
+let flushPromise: Promise<void> | null = null;
+const pendingProgressVersions: Record<string, number> = {};
+const progressWaiters: Record<string, Array<{
+  version: number;
+  resolve: () => void;
+  reject: (error: unknown) => void;
+}>> = {};
 
 async function loadProgressCache(): Promise<void> {
   if (progressCache !== null) return;
@@ -29,32 +35,97 @@ async function loadProgressCache(): Promise<void> {
   }
 }
 
-async function flushProgress(): Promise<void> {
-  // If already saving, just mark that we need to save again
-  if (isSaving) {
-    return;
+function hasPendingProgressWrites(): boolean {
+  return Object.keys(pendingProgressVersions).length > 0;
+}
+
+function addProgressWaiter(bookId: string, version: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (!progressWaiters[bookId]) {
+      progressWaiters[bookId] = [];
+    }
+
+    progressWaiters[bookId].push({ version, resolve, reject });
+  });
+}
+
+function resolveProgressWaiters(bookId: string, persistedVersion: number): void {
+  const waiters = progressWaiters[bookId];
+  if (!waiters?.length) return;
+
+  const remaining = waiters.filter((waiter) => {
+    if (waiter.version <= persistedVersion) {
+      waiter.resolve();
+      return false;
+    }
+    return true;
+  });
+
+  if (remaining.length > 0) {
+    progressWaiters[bookId] = remaining;
+  } else {
+    delete progressWaiters[bookId];
   }
+}
 
-  isSaving = true;
-  try {
-    // Keep flushing until no pending updates
-    while (Object.keys(pendingUpdates).length > 0) {
-      const updates = { ...pendingUpdates };
-      Object.keys(updates).forEach((key) => delete pendingUpdates[key]);
+function rejectProgressWaiters(bookId: string, failedVersion: number, error: unknown): void {
+  const waiters = progressWaiters[bookId];
+  if (!waiters?.length) return;
 
-      if (progressCache === null) {
-        await loadProgressCache();
+  const remaining = waiters.filter((waiter) => {
+    if (waiter.version <= failedVersion) {
+      waiter.reject(error);
+      return false;
+    }
+    return true;
+  });
+
+  if (remaining.length > 0) {
+    progressWaiters[bookId] = remaining;
+  } else {
+    delete progressWaiters[bookId];
+  }
+}
+
+async function runProgressFlush(): Promise<void> {
+  while (hasPendingProgressWrites()) {
+    const snapshotVersions = { ...pendingProgressVersions };
+    const payload = JSON.stringify(progressCache ?? {});
+
+    try {
+      await AsyncStorage.setItem(KEYS.BOOK_PROGRESS, payload);
+    } catch (error) {
+      for (const [bookId, version] of Object.entries(snapshotVersions)) {
+        rejectProgressWaiters(bookId, version, error);
+      }
+      throw error;
+    }
+
+    for (const [bookId, version] of Object.entries(snapshotVersions)) {
+      if (pendingProgressVersions[bookId] === version) {
+        delete pendingProgressVersions[bookId];
       }
 
-      // Apply all pending updates
-      Object.assign(progressCache, updates);
-
-      // Write to storage
-      const json = JSON.stringify(progressCache);
-      await AsyncStorage.setItem(KEYS.BOOK_PROGRESS, json);
+      resolveProgressWaiters(bookId, version);
     }
-  } finally {
-    isSaving = false;
+  }
+}
+
+export async function flushBookProgress(): Promise<void> {
+  if (progressCache === null) {
+    await loadProgressCache();
+  }
+
+  while (hasPendingProgressWrites()) {
+    const activeFlush = flushPromise ?? (flushPromise = runProgressFlush());
+
+    try {
+      await activeFlush;
+    } finally {
+      if (flushPromise === activeFlush) {
+        flushPromise = null;
+      }
+    }
   }
 }
 
@@ -77,17 +148,18 @@ export async function setBookProgress(bookId: string, progress: BookProgress): P
   if (progressCache === null) {
     await loadProgressCache();
   }
-  
-  // Queue the update
-  pendingUpdates[bookId] = progress;
-  
-  // Start flush if not already running
-  if (!isSaving) {
-    // Don't await here - let it run in background
-    flushProgress().catch((err) => {
-      console.error('Failed to save book progress:', err);
-    });
-  }
+
+  const version = ++nextProgressVersion;
+  progressCache![bookId] = progress;
+  pendingProgressVersions[bookId] = version;
+
+  const writePromise = addProgressWaiter(bookId, version);
+
+  void flushBookProgress().catch(() => {
+    // The returned promise for this specific write is rejected by rejectProgressWaiters.
+  });
+
+  await writePromise;
 }
 
 export async function getAllProgress(): Promise<Record<string, BookProgress>> {
