@@ -4,7 +4,6 @@ import React, {
   useState,
   useRef,
   useEffect,
-  useEffectEvent,
   useMemo,
   useCallback,
 } from 'react';
@@ -139,6 +138,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const positionRef = useRef(0);
   const loadingChapterRef = useRef(false);
   const isLoadingRef = useRef(false);
+  const notificationActionHandlersRef = useRef<{
+    togglePlayPause: () => void;
+    seekRelative: (deltaMs: number) => Promise<void>;
+  } | null>(null);
 
   // Keep refs in sync
   bookRef.current = currentBook;
@@ -467,6 +470,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     await loadChapterAudio(book, index, 0, isPlayingRef.current);
   };
 
+  notificationActionHandlersRef.current = {
+    togglePlayPause,
+    seekRelative,
+  };
+
   /* ---- derived values ---- */
   const totalBookDurationMs = useMemo(
     () => chapterDurations.reduce((s, d) => s + d, 0),
@@ -486,27 +494,24 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const timeLeftWithTempoMs = rate > 0 ? timeLeftMs / rate : timeLeftMs;
 
   /* ---- notifications ---- */
-  const handleNotificationResponse = useEffectEvent(
-    (response: Notifications.NotificationResponse) => {
-      const actionId = response.actionIdentifier;
-      if (actionId === NotificationUtils.PlaybackAction.TOGGLE) {
-        togglePlayPause();
-      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_BACK) {
-        void seekRelative(-15000);
-      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_FORWARD) {
-        void seekRelative(15000);
-      }
-    },
-  );
-
   useEffect(() => {
     void NotificationUtils.setupNotifications().catch((error) => {
       console.error('Failed to set up playback notifications:', error);
     });
 
-    const subscription = Notifications.addNotificationResponseReceivedListener(
-      handleNotificationResponse,
-    );
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const handlers = notificationActionHandlersRef.current;
+      if (!handlers) return;
+
+      const actionId = response.actionIdentifier;
+      if (actionId === NotificationUtils.PlaybackAction.TOGGLE) {
+        handlers.togglePlayPause();
+      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_BACK) {
+        void handlers.seekRelative(-15000);
+      } else if (actionId === NotificationUtils.PlaybackAction.SKIP_FORWARD) {
+        void handlers.seekRelative(15000);
+      }
+    });
 
     return () => {
       subscription.remove();
