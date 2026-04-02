@@ -64,8 +64,6 @@ export function Player() {
     totalBookDurationMs,
     bookPositionMs,
     bookProgress,
-    timeLeftMs,
-    timeLeftWithTempoMs,
     chapterDurations,
   } = player;
 
@@ -113,10 +111,14 @@ export function Player() {
     });
   }, [navigation, rate]);
 
-  const handleProgressSeek = (ratio: number) => {
+  const handleProgressPreviewChange = (ratio: number) => {
+    setDragProgress(ratio);
+  };
+
+  const handleProgressSeek = async (ratio: number) => {
     setDragProgress(ratio);
     if (totalBookDurationMs > 0) {
-      player.seekToBookPosition(ratio * totalBookDurationMs);
+      await player.seekToBookPosition(ratio * totalBookDurationMs);
     }
   };
 
@@ -153,7 +155,17 @@ export function Player() {
     ? chapter.filename.replace(/\.\w+$/, '')
     : '';
 
-  const progressRatio = isDragging ? dragProgress : (totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0);
+  const progressRatio = isDragging
+    ? dragProgress
+    : (totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0);
+  const displayBookPositionMs = isDragging
+    ? dragProgress * totalBookDurationMs
+    : bookPositionMs;
+  const displayBookProgress = isDragging
+    ? dragProgress * 100
+    : bookProgress;
+  const displayTimeLeftMs = Math.max(0, totalBookDurationMs - displayBookPositionMs);
+  const displayTimeLeftWithTempoMs = rate > 0 ? displayTimeLeftMs / rate : displayTimeLeftMs;
 
   // Use the parsed title and author from currentBook
   const displayTitle = currentBook.title;
@@ -216,6 +228,7 @@ export function Player() {
       <View style={styles.progressSection}>
         <ProgressBar 
           progress={progressRatio} 
+          onPreviewChange={handleProgressPreviewChange}
           onSeek={handleProgressSeek}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
@@ -223,11 +236,11 @@ export function Player() {
 
         <View style={styles.timeRow}>
           <Text style={styles.timeText} numberOfLines={1}>
-            {formatTime(bookPositionMs)} ({bookProgress.toFixed(1)}%)
+            {formatTime(displayBookPositionMs)} ({displayBookProgress.toFixed(1)}%)
           </Text>
           <Text style={styles.timeText} numberOfLines={1}>
-            -{formatTime(timeLeftMs)}
-            {rate !== 1.0 && ` (-${formatTime(timeLeftWithTempoMs)})`}
+            -{formatTime(displayTimeLeftMs)}
+            {rate !== 1.0 && ` (-${formatTime(displayTimeLeftWithTempoMs)})`}
           </Text>
         </View>
       </View>

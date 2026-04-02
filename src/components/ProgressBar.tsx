@@ -1,56 +1,94 @@
-import React, { useRef, useState } from 'react';
-import { View, StyleSheet, GestureResponderEvent } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, GestureResponderEvent, LayoutChangeEvent } from 'react-native';
 import { theme } from '@consts/theme';
 
 interface ProgressBarProps {
   /** 0 – 1 */
   progress: number;
-  onSeek?: (ratio: number) => void;
+  onPreviewChange?: (ratio: number) => void;
+  onSeek?: (ratio: number) => void | Promise<void>;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export function ProgressBar({ progress, onSeek, onDragStart, onDragEnd }: ProgressBarProps) {
-  const barRef = useRef<View>(null);
+export function ProgressBar({
+  progress,
+  onPreviewChange,
+  onSeek,
+  onDragStart,
+  onDragEnd,
+}: ProgressBarProps) {
+  const barWidthRef = useRef(0);
+  const dragProgressRef = useRef(progress);
+  const interactionIdRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragProgress, setDragProgress] = useState(0);
+  const [dragProgress, setDragProgress] = useState<number | null>(null);
+
+  const isInteractive = !!onSeek;
+
+  const clampRatio = (ratio: number) => Math.max(0, Math.min(1, ratio));
+
+  useEffect(() => {
+    if (!isDragging && dragProgress === null) {
+      dragProgressRef.current = progress;
+    }
+  }, [progress, isDragging, dragProgress]);
+
+  const handleLayout = (e: LayoutChangeEvent) => {
+    barWidthRef.current = e.nativeEvent.layout.width;
+  };
 
   const handleTouchStart = (e: GestureResponderEvent) => {
-    if (!onSeek) return;
+    if (!isInteractive) return;
+    interactionIdRef.current += 1;
     setIsDragging(true);
     onDragStart?.();
-    updateProgress(e);
+    updatePreview(e);
   };
 
   const handleTouchMove = (e: GestureResponderEvent) => {
-    if (!isDragging || !onSeek) return;
-    updateProgress(e);
+    if (!isDragging || !isInteractive) return;
+    updatePreview(e);
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
-    onDragEnd?.();
+    if (!isDragging || !isInteractive) return;
+
+    const interactionId = interactionIdRef.current;
+    const finalRatio = dragProgressRef.current;
+    const completeInteraction = () => {
+      if (interactionIdRef.current !== interactionId) return;
+      setIsDragging(false);
+      setDragProgress(null);
+      onDragEnd?.();
+    };
+
+    Promise.resolve(onSeek?.(finalRatio))
+      .catch(() => {
+        // The caller owns user-facing error handling.
+      })
+      .finally(completeInteraction);
   };
 
-  const updateProgress = (e: GestureResponderEvent) => {
-    if (!onSeek) return;
-    barRef.current?.measure((_x, _y, width) => {
-      if (!width) return;
-      const ratio = Math.max(0, Math.min(1, e.nativeEvent.locationX / width));
-      setDragProgress(ratio);
-      onSeek(ratio);
-    });
+  const updatePreview = (e: GestureResponderEvent) => {
+    const width = barWidthRef.current;
+    if (!width) return;
+
+    const ratio = clampRatio(e.nativeEvent.locationX / width);
+    dragProgressRef.current = ratio;
+    setDragProgress(ratio);
+    onPreviewChange?.(ratio);
   };
 
   // Use dragged progress during drag, otherwise use actual progress
-  const displayProgress = isDragging ? dragProgress : progress;
+  const displayProgress = dragProgress ?? progress;
 
   return (
     <View
-      ref={barRef}
       style={styles.container}
-      onStartShouldSetResponder={() => !!onSeek}
-      onMoveShouldSetResponder={() => !!onSeek}
+      onLayout={handleLayout}
+      onStartShouldSetResponder={() => isInteractive}
+      onMoveShouldSetResponder={() => isInteractive}
       onResponderGrant={handleTouchStart}
       onResponderMove={handleTouchMove}
       onResponderRelease={handleTouchEnd}
