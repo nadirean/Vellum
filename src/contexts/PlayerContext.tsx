@@ -4,6 +4,7 @@ import React, {
   useState,
   useRef,
   useEffect,
+  useEffectEvent,
   useMemo,
   useCallback,
 } from 'react';
@@ -485,24 +486,32 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const timeLeftWithTempoMs = rate > 0 ? timeLeftMs / rate : timeLeftMs;
 
   /* ---- notifications ---- */
-  useEffect(() => {
-    NotificationUtils.setupNotifications();
-
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+  const handleNotificationResponse = useEffectEvent(
+    (response: Notifications.NotificationResponse) => {
       const actionId = response.actionIdentifier;
       if (actionId === NotificationUtils.PlaybackAction.TOGGLE) {
         togglePlayPause();
       } else if (actionId === NotificationUtils.PlaybackAction.SKIP_BACK) {
-        seekRelative(-15000);
+        void seekRelative(-15000);
       } else if (actionId === NotificationUtils.PlaybackAction.SKIP_FORWARD) {
-        seekRelative(15000);
+        void seekRelative(15000);
       }
+    },
+  );
+
+  useEffect(() => {
+    void NotificationUtils.setupNotifications().catch((error) => {
+      console.error('Failed to set up playback notifications:', error);
     });
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      handleNotificationResponse,
+    );
 
     return () => {
       subscription.remove();
     };
-  }, [togglePlayPause, seekRelative]);
+  }, []);
 
   useEffect(() => {
     if (currentBook && !isLoading) {
