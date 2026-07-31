@@ -6,7 +6,7 @@ import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { RootNavigator } from '@navigation';
-import { PlayerProvider } from '@contexts/PlayerContext';
+import { StoreProvider } from '@providers/StoreProvider';
 import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
 
@@ -50,12 +50,12 @@ export function App() {
   }
 
   return (
-    <PlayerProvider>
+    <StoreProvider>
       <NavigationContainer theme={navTheme}>
         <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
         <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
       </NavigationContainer>
-    </PlayerProvider>
+    </StoreProvider>
   );
 }
 

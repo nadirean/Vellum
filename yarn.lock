@@ -6557,6 +6557,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mobx-react-lite@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "mobx-react-lite@npm:5.0.0"
+  peerDependencies:
+    mobx: ^7.0.0
+    react: ^18 || ^19
+  checksum: 10c0/8948e7b221c35cefae0b6981a4e45c8a2ae105765c48ffd94264801d5443aac41c08f92772c52f2fdfe5c0a0a64e3b8ceb863f9de317b83de25474c571fc03ed
+  languageName: node
+  linkType: hard
+
+"mobx@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "mobx@npm:7.0.0"
+  checksum: 10c0/19e4d11a96efdbb21c14c6a7fb1b96bfc78810e0a8f382b4fce6778ff35fdb0c80c60b30b6282231258d9258ed80deded8f8d88b50ab51a2062cf6faef191d0f
+  languageName: node
+  linkType: hard
+
 "ms@npm:2.0.0":
   version: 2.0.0
   resolution: "ms@npm:2.0.0"
@@ -8645,6 +8662,8 @@ __metadata:
     expo-splash-screen: "npm:~55.0.23"
     expo-system-ui: "npm:~55.0.20"
     globals: "npm:^17.6.0"
+    mobx: "npm:^7.0.0"
+    mobx-react-lite: "npm:^5.0.0"
     prettier: "npm:^3.8.1"
     react: "npm:19.2.0"
     react-dom: "npm:19.2.0"

@@ -21,14 +21,28 @@ configured.
 
 ## Path aliases (tsconfig.json; resolved at runtime via `experiments.tsconfigPaths` in app.json)
 
-- `@navigation` → `src/navigation`, `@components/*` → `src/components`, `@contexts/*`, `@utils/*`,
-  `@consts/*`, `@assets/*`
+- `@navigation` → `src/navigation`, `@components/*` → `src/components`, `@providers/*`, `@stores/*`,
+  `@utils/*`, `@consts/*`, `@assets/*`
 - `@screens/*` → `src/navigation/screens/*` (NOT `src/screens`)
 
 ## Architecture
 
-- Entry `index.tsx` → `src/App.tsx`. `PlayerProvider` (`src/contexts/PlayerContext.tsx`) wraps the
-  navigation stack and owns ALL playback state; screens use `usePlayer()`.
+- Entry `index.tsx` → `src/App.tsx`. `StoreProvider` (`src/providers/StoreProvider.tsx`) creates a
+  single `RootStore` and wraps the navigation stack. Screens consume store slices via
+  `usePlayerStore()` / `useUIStore()` and are wrapped in `observer()` from `mobx-react-lite`.
+- Stores (`src/stores/`) are MobX classes using
+  `makeAutoObservable(this, { internalField: false, ... }, { autoBind: true })`. Non-observable
+  fields (native player, listeners, timers, reaction disposers) must be listed in the overrides
+  object so they aren't treated as observables.
+- `PlayerStore` owns ALL playback state (book, chapter, position, rate, durations). Derived values
+  are computed getters (`totalBookDurationMs`, `bookProgress`, …). `RootStore.bootstrap()` hydrates
+  persisted state and calls `player.setup()`; `dispose()` tears down listeners, timers, and
+  reactions via the StoreProvider mount effect.
+- Background work lives in `PlayerStore.setup()` as MobX `reaction`s + plain subscriptions: progress
+  persists every 5s, on pause, on background, and before switching books; a notification reaction
+  keeps the playback notification in sync.
+- Async flows (e.g. `loadBook`, `loadChapterAudio`) are auto-actions; observable writes that happen
+  _after_ an `await` must be wrapped in `runInAction(...)` (MobX strict mode).
 - First run: App reads base folder from AsyncStorage; no folder → `FolderSetup`, else `Library`.
 - Each subfolder of the base folder is one audiobook. Title/author parsed from `Title [Author]`
   folder names; otherwise author = "Unknown Author" (`src/utils/scanner.ts:124`).
@@ -36,7 +50,8 @@ configured.
 - Book progress (AsyncStorage `@vellum/bookProgress`) goes through a versioned, batched flush in
   `src/utils/storage.ts`; `setBookProgress` awaits persistence. Saved every 5s, on pause, on
   background, and before switching books.
-- Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus`.
+- Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus`,
+  managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
 
@@ -46,7 +61,10 @@ configured.
   hand-create them.
 - Audio uses the new `expo-audio` API (`createAudioPlayer`, `player.replace()`), not deprecated
   `expo-av`.
-- PlayerContext async callbacks read stable `*Ref` mirrors (bookRef, chapterIdxRef, etc.), not state
-  — keep refs in sync when adding state (see the sync block after `useState`s).
+- MobX strict mode is on: mutating an observable outside an action logs a warning. Since the store
+  instance is stable, async callbacks read/write `this.*` directly (no ref mirrors needed), but wrap
+  post-`await` writes in `runInAction`.
+- Don't mark store fields `private` if they're referenced in the `makeAutoObservable` overrides
+  object — TypeScript excludes private members from `AnnotationsMap`.
 - Notification category registers only the TOGGLE action button; skip-back/forward work via
   notification responses (see `src/utils/notifications.ts`).

@@ -14,12 +14,12 @@ import {
 } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { observer } from 'mobx-react-lite';
 
 import { CoverFocusModal } from '@components/CoverFocusModal';
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
 import { ProgressBar } from '@components/ProgressBar';
-import { usePlayer } from '@contexts/PlayerContext';
-import * as Storage from '@utils/storage';
+import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import { theme } from '@consts/theme';
 
 /* ------------------------------------------------------------------ */
@@ -48,12 +48,12 @@ const COVER_CONTENT_SIZE = 256;
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function Player() {
+export const Player = observer(function Player() {
   const navigation = useNavigation();
-  const player = usePlayer();
+  const player = usePlayerStore();
+  const ui = useUIStore();
   const [showRateModal, setShowRateModal] = useState(false);
   const [showFocusModal, setShowFocusModal] = useState(false);
-  const [coverFocusY, setCoverFocusY] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
 
@@ -68,19 +68,9 @@ export function Player() {
     bookProgress,
   } = player;
 
-  // Load persisted cover focus when book changes
-  useEffect(() => {
+  const handleSaveCoverFocus = (focusY: number) => {
     if (currentBook) {
-      Storage.getCoverFocusY(currentBook.id).then(setCoverFocusY);
-    } else {
-      setCoverFocusY(50);
-    }
-  }, [currentBook?.id]);
-
-  const handleSaveCoverFocus = async (focusY: number) => {
-    if (currentBook) {
-      setCoverFocusY(focusY);
-      await Storage.setCoverFocusY(currentBook.id, focusY);
+      ui.setCoverFocusY(currentBook.id, focusY);
     }
   };
 
@@ -150,6 +140,7 @@ export function Player() {
 
   const chapter = currentBook.chapters[currentChapterIndex];
   const chapterName = chapter ? chapter.filename.replace(/\.\w+$/, '') : '';
+  const coverFocusY = ui.getCoverFocusY(currentBook.id);
 
   const progressRatio = isDragging
     ? dragProgress
@@ -321,7 +312,7 @@ export function Player() {
       </Modal>
     </ScrollView>
   );
-}
+});
 
 /* ------------------------------------------------------------------ */
 /*  Styles                                                             */

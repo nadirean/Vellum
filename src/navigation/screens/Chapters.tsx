@@ -2,7 +2,9 @@ import React from 'react';
 
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { usePlayer } from '@contexts/PlayerContext';
+import { observer } from 'mobx-react-lite';
+
+import { usePlayerStore } from '@providers/StoreProvider';
 import { theme } from '@consts/theme';
 
 function formatTime(ms: number): string {
@@ -18,8 +20,8 @@ function formatTime(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-export function Chapters() {
-  const player = usePlayer();
+export const Chapters = observer(function Chapters() {
+  const player = usePlayerStore();
   const { currentBook, currentChapterIndex, chapterDurations } = player;
 
   if (!currentBook) return null;
@@ -64,7 +66,7 @@ export function Chapters() {
       </ScrollView>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {},

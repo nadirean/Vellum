@@ -14,10 +14,11 @@ import {
 } from 'react-native';
 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { observer } from 'mobx-react-lite';
 
 import type { RootStackParamList } from '@navigation/index';
 import { BookCard } from '@components/BookCard';
-import { usePlayer } from '@contexts/PlayerContext';
+import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import { scanAudiobooks } from '@utils/scanner';
 import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
@@ -25,15 +26,15 @@ import { Audiobook } from '@consts/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
 
-export function Library() {
+export const Library = observer(function Library() {
   const navigation = useNavigation<Nav>();
-  const player = usePlayer();
+  const player = usePlayerStore();
+  const ui = useUIStore();
 
   const [books, setBooks] = useState<Audiobook[]>([]);
   const [isScanning, setIsScanning] = useState(true);
   const [lastFolder, setLastFolder] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [coverFocusMap, setCoverFocusMap] = useState<Record<string, number>>({});
 
   const loadBooks = useCallback(async () => {
     const folder = await Storage.getBaseFolder();
@@ -82,10 +83,6 @@ export function Library() {
       }
     }
     setProgressMap(map);
-
-    // Also refresh cover focus positions
-    const focusMap = await Storage.getAllCoverFocus();
-    setCoverFocusMap(focusMap);
   };
 
   // Scan on focus
@@ -123,7 +120,7 @@ export function Library() {
       progressPercent={progressMap[item.id] ?? null}
       isPlaying={player.currentBook?.id === item.id && player.isPlaying}
       onPress={() => handleBookPress(item)}
-      coverFocusY={coverFocusMap[item.id]}
+      coverFocusY={ui.getCoverFocusY(item.id)}
     />
   );
 
@@ -188,7 +185,7 @@ export function Library() {
       />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

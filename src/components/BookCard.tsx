@@ -17,8 +17,6 @@ interface BookCardProps {
   coverFocusY?: number; // 0–100, default 50
 }
 
-const CARD_GAP = theme.spacing.md;
-
 export function BookCard({
   title,
   author,
@@ -84,7 +82,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
-    marginBottom: CARD_GAP,
+    marginBottom: theme.spacing.md,
     alignItems: 'center',
     padding: theme.spacing.sm,
     borderWidth: 2,
