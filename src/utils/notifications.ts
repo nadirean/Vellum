@@ -1,5 +1,3 @@
-import { Platform } from 'react-native';
-
 import * as Notifications from 'expo-notifications';
 
 export const PLAYBACK_CHANNEL_ID = 'playback-controls';
@@ -22,15 +20,13 @@ export async function setupNotifications() {
     return false;
   }
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync(PLAYBACK_CHANNEL_ID, {
-      name: 'Playback Controls',
-      importance: Notifications.AndroidImportance.LOW, // Low importance to avoid sound/pop-up every update
-      showBadge: false,
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      enableVibrate: false,
-    });
-  }
+  await Notifications.setNotificationChannelAsync(PLAYBACK_CHANNEL_ID, {
+    name: 'Playback Controls',
+    importance: Notifications.AndroidImportance.LOW, // Low importance to avoid sound/pop-up every update
+    showBadge: false,
+    lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+    enableVibrate: false,
+  });
 
   await Notifications.setNotificationCategoryAsync(PLAYBACK_CATEGORY_ID, [
     {

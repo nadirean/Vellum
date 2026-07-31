@@ -7,13 +7,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "scheme": "vellum",
+    "platforms": ["android"],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.vellum"
+      "package": "com.nadirean.vellum"
     },
     "experiments": {
       "tsconfigPaths": true
