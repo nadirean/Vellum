@@ -6,7 +6,6 @@
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "scheme": "vellum",
     "android": {
       "adaptiveIcon": {
@@ -24,7 +23,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/android-push-notification.png",
+          "icon": "./assets/android-push-notification.png"
         }
       ],
       [
@@ -33,7 +32,9 @@
           "backgroundColor": "#000000",
           "image": "./assets/android-icon-foreground.png"
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-font"
     ]
   }
 }

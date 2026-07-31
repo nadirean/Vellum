@@ -1,5 +1,6 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+
+import * as Notifications from 'expo-notifications';
 
 export const PLAYBACK_CHANNEL_ID = 'playback-controls';
 export const PLAYBACK_CATEGORY_ID = 'playback';
@@ -44,7 +45,7 @@ export async function updatePlaybackNotification(
   title: string,
   author: string,
   isPlaying: boolean,
-  progress: number
+  progress: number,
 ) {
   await Notifications.setNotificationHandler({
     handleNotification: async () => ({

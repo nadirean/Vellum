@@ -1,13 +1,9 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import { theme } from '@consts/theme';
+
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { usePlayer } from '@contexts/PlayerContext';
+import { theme } from '@consts/theme';
 
 function formatTime(ms: number): string {
   if (!isFinite(ms) || ms < 0) ms = 0;
@@ -32,7 +28,9 @@ export function Chapters() {
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <Text style={styles.headerTitle}>CHAPTERS</Text>
-        <Text style={styles.bookTitle} numberOfLines={1}>{currentBook.title}</Text>
+        <Text style={styles.bookTitle} numberOfLines={1}>
+          {currentBook.title}
+        </Text>
 
         <View style={styles.listContainer}>
           {currentBook.chapters.map((ch, idx) => {
@@ -57,9 +55,7 @@ export function Chapters() {
                   >
                     {ch.filename.replace(/\.\w+$/, '')}
                   </Text>
-                  {dur > 0 && (
-                    <Text style={styles.chapterDur}>{formatTime(dur)}</Text>
-                  )}
+                  {dur > 0 && <Text style={styles.chapterDur}>{formatTime(dur)}</Text>}
                 </View>
               </TouchableOpacity>
             );
@@ -71,8 +67,7 @@ export function Chapters() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-  },
+  container: {},
   contentContainer: {
     padding: 24,
   },
@@ -121,8 +116,7 @@ const styles = StyleSheet.create({
   chapterNumberActive: {
     color: theme.colors.primaryLight,
   },
-  chapterContent: {
-  },
+  chapterContent: {},
   chapterText: {
     color: theme.colors.text,
     fontSize: theme.fontSize.md,

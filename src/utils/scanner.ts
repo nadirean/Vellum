@@ -1,8 +1,17 @@
 import { Directory, File } from 'expo-file-system';
-import { AudioChapter, Audiobook } from '@consts/types';
+
+import { Audiobook, AudioChapter } from '@consts/types';
 
 const AUDIO_EXTENSIONS = new Set([
-  '.mp3', '.m4a', '.m4b', '.aac', '.ogg', '.flac', '.wav', '.opus', '.wma',
+  '.mp3',
+  '.m4a',
+  '.m4b',
+  '.aac',
+  '.ogg',
+  '.flac',
+  '.wav',
+  '.opus',
+  '.wma',
 ]);
 
 const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);
@@ -91,9 +100,7 @@ export async function scanAudiobooks(baseFolderUri: string): Promise<Audiobook[]
     const baseDir = new Directory(baseFolderUri);
     const children = baseDir.list();
 
-    const directories = children.filter(
-      (item): item is Directory => item instanceof Directory,
-    );
+    const directories = children.filter((item): item is Directory => item instanceof Directory);
 
     const books: Audiobook[] = directories.map((dir) => scanSingleBook(dir));
 

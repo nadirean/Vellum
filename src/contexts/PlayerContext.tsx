@@ -1,23 +1,21 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
-  useState,
-  useRef,
   useEffect,
   useMemo,
-  useCallback,
+  useRef,
+  useState,
 } from 'react';
+
 import { AppState } from 'react-native';
-import {
-  createAudioPlayer,
-  setAudioModeAsync,
-  AudioPlayer,
-  AudioStatus,
-} from 'expo-audio';
-import { Audiobook } from '@consts/types';
-import * as Storage from '@utils/storage';
-import * as NotificationUtils from '@utils/notifications';
+
+import { AudioPlayer, AudioStatus, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import * as Notifications from 'expo-notifications';
+
+import * as NotificationUtils from '@utils/notifications';
+import * as Storage from '@utils/storage';
+import { Audiobook } from '@consts/types';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -71,7 +69,11 @@ async function measureDuration(uri: string): Promise<number> {
     const cleanup = () => {
       if (!resolved) {
         resolved = true;
-        try { tmpPlayer.remove(); } catch { /* ignore */ }
+        try {
+          tmpPlayer.remove();
+        } catch {
+          /* ignore */
+        }
       }
     };
 
@@ -80,7 +82,11 @@ async function measureDuration(uri: string): Promise<number> {
         resolved = true;
         const durMs = Math.round(status.duration * 1000);
         sub.remove();
-        try { tmpPlayer.remove(); } catch { /* ignore */ }
+        try {
+          tmpPlayer.remove();
+        } catch {
+          /* ignore */
+        }
         resolve(durMs);
       }
     });
@@ -102,9 +108,7 @@ async function scanChapterDurations(book: Audiobook): Promise<number[]> {
 
   for (let i = 0; i < book.chapters.length; i += BATCH) {
     const batch = book.chapters.slice(i, i + BATCH);
-    const results = await Promise.all(
-      batch.map((ch) => measureDuration(ch.uri)),
-    );
+    const results = await Promise.all(batch.map((ch) => measureDuration(ch.uri)));
     results.forEach((d: number, j: number) => {
       durations[i + j] = d;
     });
@@ -165,7 +169,11 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     return () => {
       listenerRef.current?.remove();
-      try { playerRef.current?.remove(); } catch { /* ignore */ }
+      try {
+        playerRef.current?.remove();
+      } catch {
+        /* ignore */
+      }
     };
   }, []);
 
@@ -190,12 +198,12 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to persist progress for book:', bookRef.current?.id, err);
       });
     };
-    
+
     // Save immediately when paused
     if (!isPlaying) {
       save();
     }
-    
+
     const id = setInterval(save, 5000);
     return () => {
       clearInterval(id);
@@ -218,125 +226,122 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [persistCurrentProgress]);
 
   /* ---- core: load a single chapter's audio ---- */
-  const loadChapterAudio = useCallback(async (
-    book: Audiobook,
-    chapterIndex: number,
-    positionMsArg: number,
-    shouldPlay: boolean,
-  ) => {
-    if (loadingChapterRef.current) return;
-    loadingChapterRef.current = true;
+  const loadChapterAudio = useCallback(
+    async (book: Audiobook, chapterIndex: number, positionMsArg: number, shouldPlay: boolean) => {
+      if (loadingChapterRef.current) return;
+      loadingChapterRef.current = true;
 
-    try {
-      const chapter = book.chapters[chapterIndex];
-      if (!chapter) return;
+      try {
+        const chapter = book.chapters[chapterIndex];
+        if (!chapter) return;
 
-      // Remove old listener
-      listenerRef.current?.remove();
-      listenerRef.current = null;
+        // Remove old listener
+        listenerRef.current?.remove();
+        listenerRef.current = null;
 
-      // Reuse existing player (replace source) or create new one
-      if (playerRef.current) {
-        playerRef.current.replace({ uri: chapter.uri });
-      } else {
-        playerRef.current = createAudioPlayer({ uri: chapter.uri });
-      }
-
-      const player = playerRef.current;
-      player.setPlaybackRate(rateRef.current);
-
-      // Update state immediately
-      const newDurations = [...durationsRef.current];
-      while (newDurations.length < book.chapters.length) newDurations.push(0);
-
-      durationsRef.current = newDurations;
-      chapterIdxRef.current = chapterIndex;
-      bookRef.current = book;
-
-      setCurrentBook(book);
-      setCurrentChapterIndex(chapterIndex);
-      setPositionMs(positionMsArg);
-      setIsPlaying(shouldPlay);
-      setChapterDurations(newDurations);
-
-      // Set up status listener
-      const sub = player.addListener('playbackStatusUpdate', (status: AudioStatus) => {
-        if (!status.isLoaded) return;
-
-        const curMs = Math.round(status.currentTime * 1000);
-        const durMs = Math.round(status.duration * 1000);
-
-        setPositionMs(curMs);
-        positionRef.current = curMs;
-
-        if (durMs > 0) {
-          setDurationMs(durMs);
-          // Update chapter duration if we got a better value
-          const curDurations = [...durationsRef.current];
-          if (curDurations[chapterIdxRef.current] !== durMs && durMs > 0) {
-            curDurations[chapterIdxRef.current] = durMs;
-            durationsRef.current = curDurations;
-            setChapterDurations(curDurations);
-          }
+        // Reuse existing player (replace source) or create new one
+        if (playerRef.current) {
+          playerRef.current.replace({ uri: chapter.uri });
+        } else {
+          playerRef.current = createAudioPlayer({ uri: chapter.uri });
         }
 
-        setIsPlaying(status.playing);
-        isPlayingRef.current = status.playing;
+        const player = playerRef.current;
+        player.setPlaybackRate(rateRef.current);
 
-        if (status.didJustFinish) {
-          const bk = bookRef.current;
-          const nextIdx = chapterIdxRef.current + 1;
-          if (bk && nextIdx < bk.chapters.length) {
-            loadingChapterRef.current = false; // allow re-entry
-            loadChapterAudio(bk, nextIdx, 0, true);
-          }
-        }
-      });
+        // Update state immediately
+        const newDurations = [...durationsRef.current];
+        while (newDurations.length < book.chapters.length) newDurations.push(0);
 
-      listenerRef.current = sub;
+        durationsRef.current = newDurations;
+        chapterIdxRef.current = chapterIndex;
+        bookRef.current = book;
 
-      // Wait a tick for the player to load, then seek + play
-      const waitForLoad = (): Promise<void> => {
-        return new Promise((resolve) => {
-          const check = () => {
-            if (player.isLoaded) {
-              resolve();
-            } else {
-              setTimeout(check, 50);
+        setCurrentBook(book);
+        setCurrentChapterIndex(chapterIndex);
+        setPositionMs(positionMsArg);
+        setIsPlaying(shouldPlay);
+        setChapterDurations(newDurations);
+
+        // Set up status listener
+        const sub = player.addListener('playbackStatusUpdate', (status: AudioStatus) => {
+          if (!status.isLoaded) return;
+
+          const curMs = Math.round(status.currentTime * 1000);
+          const durMs = Math.round(status.duration * 1000);
+
+          setPositionMs(curMs);
+          positionRef.current = curMs;
+
+          if (durMs > 0) {
+            setDurationMs(durMs);
+            // Update chapter duration if we got a better value
+            const curDurations = [...durationsRef.current];
+            if (curDurations[chapterIdxRef.current] !== durMs && durMs > 0) {
+              curDurations[chapterIdxRef.current] = durMs;
+              durationsRef.current = curDurations;
+              setChapterDurations(curDurations);
             }
-          };
-          check();
-          // Safety timeout
-          setTimeout(resolve, 5000);
+          }
+
+          setIsPlaying(status.playing);
+          isPlayingRef.current = status.playing;
+
+          if (status.didJustFinish) {
+            const bk = bookRef.current;
+            const nextIdx = chapterIdxRef.current + 1;
+            if (bk && nextIdx < bk.chapters.length) {
+              loadingChapterRef.current = false; // allow re-entry
+              loadChapterAudio(bk, nextIdx, 0, true);
+            }
+          }
         });
-      };
 
-      await waitForLoad();
+        listenerRef.current = sub;
 
-      if (positionMsArg > 0) {
-        await player.seekTo(positionMsArg / 1000);
+        // Wait a tick for the player to load, then seek + play
+        const waitForLoad = (): Promise<void> => {
+          return new Promise((resolve) => {
+            const check = () => {
+              if (player.isLoaded) {
+                resolve();
+              } else {
+                setTimeout(check, 50);
+              }
+            };
+            check();
+            // Safety timeout
+            setTimeout(resolve, 5000);
+          });
+        };
+
+        await waitForLoad();
+
+        if (positionMsArg > 0) {
+          await player.seekTo(positionMsArg / 1000);
+        }
+
+        if (shouldPlay) {
+          player.play();
+        }
+
+        // Capture duration now that it's loaded
+        if (player.duration > 0) {
+          const loadedDur = Math.round(player.duration * 1000);
+          setDurationMs(loadedDur);
+          const updDurations = [...durationsRef.current];
+          updDurations[chapterIndex] = loadedDur;
+          durationsRef.current = updDurations;
+          setChapterDurations(updDurations);
+        }
+      } catch (error) {
+        console.error('Error loading chapter:', error);
+      } finally {
+        loadingChapterRef.current = false;
       }
-
-      if (shouldPlay) {
-        player.play();
-      }
-
-      // Capture duration now that it's loaded
-      if (player.duration > 0) {
-        const loadedDur = Math.round(player.duration * 1000);
-        setDurationMs(loadedDur);
-        const updDurations = [...durationsRef.current];
-        updDurations[chapterIndex] = loadedDur;
-        durationsRef.current = updDurations;
-        setChapterDurations(updDurations);
-      }
-
-    } catch (error) {
-      console.error('Error loading chapter:', error);
-    } finally {
-      loadingChapterRef.current = false;
-    }
-  }, []);
+    },
+    [],
+  );
 
   /* ---- public API ---- */
 
@@ -486,9 +491,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     return prev + positionMs;
   }, [chapterDurations, currentChapterIndex, positionMs]);
 
-  const bookProgress = totalBookDurationMs > 0
-    ? (bookPositionMs / totalBookDurationMs) * 100
-    : 0;
+  const bookProgress = totalBookDurationMs > 0 ? (bookPositionMs / totalBookDurationMs) * 100 : 0;
 
   const timeLeftMs = Math.max(0, totalBookDurationMs - bookPositionMs);
   const timeLeftWithTempoMs = rate > 0 ? timeLeftMs / rate : timeLeftMs;
@@ -554,9 +557,5 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     goToChapter,
   };
 
-  return (
-    <PlayerContext.Provider value={value}>
-      {children}
-    </PlayerContext.Provider>
-  );
+  return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 }

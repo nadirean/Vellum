@@ -1,13 +1,11 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@consts/theme';
+
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
+import { theme } from '@consts/theme';
 
 interface BookCardProps {
   title: string;
@@ -21,7 +19,15 @@ interface BookCardProps {
 
 const CARD_GAP = theme.spacing.md;
 
-export function BookCard({ title, author, coverUri, progressPercent, isPlaying, onPress, coverFocusY }: BookCardProps) {
+export function BookCard({
+  title,
+  author,
+  coverUri,
+  progressPercent,
+  isPlaying,
+  onPress,
+  coverFocusY,
+}: BookCardProps) {
   return (
     <TouchableOpacity
       style={[styles.card, isPlaying && styles.cardPlaying]}
@@ -33,12 +39,16 @@ export function BookCard({ title, author, coverUri, progressPercent, isPlaying, 
           <FocusedCoverImage uri={coverUri} size={60} focusY={coverFocusY} />
         ) : (
           <View style={styles.coverPlaceholder}>
-            <MaterialCommunityIcons name="headphones" size={32} color={theme.colors.textSecondary} />
+            <MaterialCommunityIcons
+              name='headphones'
+              size={32}
+              color={theme.colors.textSecondary}
+            />
           </View>
         )}
         {isPlaying && (
           <View style={styles.playingBadge}>
-            <MaterialCommunityIcons name="play" size={10} color={theme.colors.text} />
+            <MaterialCommunityIcons name='play' size={10} color={theme.colors.text} />
           </View>
         )}
       </View>

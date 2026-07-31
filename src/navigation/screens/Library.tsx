@@ -1,24 +1,27 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  TouchableOpacity,
-  StatusBar,
-  RefreshControl,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@navigation/index';
+
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { theme } from '@consts/theme';
-import { Audiobook } from '@consts/types';
-import { usePlayer } from '@contexts/PlayerContext';
+
+import type { RootStackParamList } from '@navigation/index';
 import { BookCard } from '@components/BookCard';
+import { usePlayer } from '@contexts/PlayerContext';
 import { scanAudiobooks } from '@utils/scanner';
 import * as Storage from '@utils/storage';
+import { theme } from '@consts/theme';
+import { Audiobook } from '@consts/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
 
@@ -100,7 +103,7 @@ export function Library() {
           onPress={() => navigation.navigate('FolderSetup')}
           style={styles.headerBtn}
         >
-          <MaterialCommunityIcons name="folder" size={22} color={theme.colors.text} />
+          <MaterialCommunityIcons name='folder' size={22} color={theme.colors.text} />
         </TouchableOpacity>
       ),
     });
@@ -127,8 +130,8 @@ export function Library() {
   if (isScanning) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <ActivityIndicator size='large' color={theme.colors.primary} />
         <Text style={styles.scanText}>Scanning audiobooks…</Text>
       </View>
     );
@@ -137,12 +140,17 @@ export function Library() {
   if (books.length === 0) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
-        <MaterialCommunityIcons name="inbox" size={56} color={theme.colors.textSecondary} style={styles.emptyIcon} />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <MaterialCommunityIcons
+          name='inbox'
+          size={56}
+          color={theme.colors.textSecondary}
+          style={styles.emptyIcon}
+        />
         <Text style={styles.emptyTitle}>No audiobooks found</Text>
         <Text style={styles.emptyDesc}>
-          Make sure your audiobooks are in sub‑folders inside the selected
-          folder, and each sub‑folder contains audio files.
+          Make sure your audiobooks are in sub‑folders inside the selected folder, and each
+          sub‑folder contains audio files.
         </Text>
         <TouchableOpacity
           style={styles.retryBtn}
@@ -159,7 +167,7 @@ export function Library() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
+      <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
       <FlatList
         data={books}
         renderItem={renderBook}

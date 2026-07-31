@@ -1,24 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
+  ActivityIndicator,
   Modal,
   Pressable,
+  ScrollView,
   StatusBar,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import { theme } from '@consts/theme';
-import { usePlayer } from '@contexts/PlayerContext';
-import { ProgressBar } from '@components/ProgressBar';
-import { FocusedCoverImage } from '@components/FocusedCoverImage';
+
 import { CoverFocusModal } from '@components/CoverFocusModal';
+import { FocusedCoverImage } from '@components/FocusedCoverImage';
+import { ProgressBar } from '@components/ProgressBar';
+import { usePlayer } from '@contexts/PlayerContext';
 import * as Storage from '@utils/storage';
+import { theme } from '@consts/theme';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -64,7 +66,6 @@ export function Player() {
     totalBookDurationMs,
     bookPositionMs,
     bookProgress,
-    chapterDurations,
   } = player;
 
   // Load persisted cover focus when book changes
@@ -93,17 +94,14 @@ export function Player() {
             onPress={() => navigation.navigate('Chapters')}
             style={styles.headerBtn}
           >
-            <MaterialCommunityIcons 
-              name="format-list-bulleted" 
-              size={24} 
-              color={theme.colors.primaryLight} 
+            <MaterialCommunityIcons
+              name='format-list-bulleted'
+              size={24}
+              color={theme.colors.primaryLight}
             />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => setShowRateModal(true)}
-            style={styles.headerBtn}
-          >
+          <TouchableOpacity onPress={() => setShowRateModal(true)} style={styles.headerBtn}>
             <Text style={styles.rateHeaderText}>{rate.toFixed(rate % 1 === 0 ? 1 : 2)}x</Text>
           </TouchableOpacity>
         </View>
@@ -133,7 +131,7 @@ export function Player() {
   if (!currentBook) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
         <Text style={styles.noBookText}>No book selected</Text>
       </View>
     );
@@ -142,8 +140,8 @@ export function Player() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <ActivityIndicator size='large' color={theme.colors.primary} />
         <Text style={styles.loadingText}>Loading audiobook…</Text>
         <Text style={styles.loadingSubtext}>Scanning chapter durations</Text>
       </View>
@@ -151,19 +149,15 @@ export function Player() {
   }
 
   const chapter = currentBook.chapters[currentChapterIndex];
-  const chapterName = chapter
-    ? chapter.filename.replace(/\.\w+$/, '')
-    : '';
+  const chapterName = chapter ? chapter.filename.replace(/\.\w+$/, '') : '';
 
   const progressRatio = isDragging
     ? dragProgress
-    : (totalBookDurationMs > 0 ? bookPositionMs / totalBookDurationMs : 0);
-  const displayBookPositionMs = isDragging
-    ? dragProgress * totalBookDurationMs
-    : bookPositionMs;
-  const displayBookProgress = isDragging
-    ? dragProgress * 100
-    : bookProgress;
+    : totalBookDurationMs > 0
+      ? bookPositionMs / totalBookDurationMs
+      : 0;
+  const displayBookPositionMs = isDragging ? dragProgress * totalBookDurationMs : bookPositionMs;
+  const displayBookProgress = isDragging ? dragProgress * 100 : bookProgress;
   const displayTimeLeftMs = Math.max(0, totalBookDurationMs - displayBookPositionMs);
   const displayTimeLeftWithTempoMs = rate > 0 ? displayTimeLeftMs / rate : displayTimeLeftMs;
 
@@ -177,7 +171,7 @@ export function Player() {
       contentContainerStyle={styles.contentContainer}
       bounces={false}
     >
-      <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
+      <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
 
       {/* Chapter Information */}
       <View style={styles.chapterContainer}>
@@ -206,7 +200,11 @@ export function Player() {
           />
         ) : (
           <View style={styles.coverPlaceholder}>
-            <MaterialCommunityIcons name="headphones" size={72} color={theme.colors.textSecondary} />
+            <MaterialCommunityIcons
+              name='headphones'
+              size={72}
+              color={theme.colors.textSecondary}
+            />
           </View>
         )}
       </Pressable>
@@ -226,8 +224,8 @@ export function Player() {
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
-        <ProgressBar 
-          progress={progressRatio} 
+        <ProgressBar
+          progress={progressRatio}
           onPreviewChange={handleProgressPreviewChange}
           onSeek={handleProgressSeek}
           onDragStart={handleDragStart}
@@ -252,7 +250,7 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(-60000)}
         >
-          <MaterialCommunityIcons name="rewind" size={36} color={theme.colors.textSecondary} />
+          <MaterialCommunityIcons name='rewind' size={36} color={theme.colors.textSecondary} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -260,7 +258,11 @@ export function Player() {
           activeOpacity={0.7}
           onPress={player.togglePlayPause}
         >
-          <MaterialCommunityIcons name={isPlaying ? 'pause' : 'play'} size={54} color={theme.colors.text} />
+          <MaterialCommunityIcons
+            name={isPlaying ? 'pause' : 'play'}
+            size={54}
+            color={theme.colors.text}
+          />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -268,7 +270,11 @@ export function Player() {
           activeOpacity={0.6}
           onPress={() => player.seekRelative(60000)}
         >
-          <MaterialCommunityIcons name="fast-forward" size={36} color={theme.colors.textSecondary} />
+          <MaterialCommunityIcons
+            name='fast-forward'
+            size={36}
+            color={theme.colors.textSecondary}
+          />
         </TouchableOpacity>
       </View>
 
@@ -287,7 +293,7 @@ export function Player() {
       <Modal
         visible={showRateModal}
         transparent
-        animationType="fade"
+        animationType='fade'
         onRequestClose={() => setShowRateModal(false)}
       >
         <Pressable style={styles.modalOverlay} onPress={() => setShowRateModal(false)}>
@@ -304,9 +310,7 @@ export function Player() {
                     setShowRateModal(false);
                   }}
                 >
-                  <Text
-                    style={[styles.rateOptionText, isActive && styles.rateOptionTextActive]}
-                  >
+                  <Text style={[styles.rateOptionText, isActive && styles.rateOptionTextActive]}>
                     {r.toFixed(r % 1 === 0 ? 1 : 2)}x
                   </Text>
                 </TouchableOpacity>

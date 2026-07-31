@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Image } from 'react-native';
+import React, { useEffect, useState } from 'react';
+
+import { Image, View } from 'react-native';
 
 interface FocusedCoverImageProps {
   uri: string;
@@ -39,7 +40,7 @@ export function FocusedCoverImage({
       <Image
         source={{ uri }}
         style={{ width: size, height: size, borderRadius }}
-        resizeMode="cover"
+        resizeMode='cover'
       />
     );
   }
@@ -51,10 +52,7 @@ export function FocusedCoverImage({
 
   return (
     <View style={{ width: size, height: size, overflow: 'hidden', borderRadius }}>
-      <Image
-        source={{ uri }}
-        style={{ position: 'absolute', width: size, height: imgH, top }}
-      />
+      <Image source={{ uri }} style={{ position: 'absolute', width: size, height: imgH, top }} />
     </View>
   );
 }

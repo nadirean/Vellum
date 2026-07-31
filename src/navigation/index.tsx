@@ -1,9 +1,10 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { Chapters } from '@screens/Chapters';
 import { FolderSetup } from '@screens/FolderSetup';
 import { Library } from '@screens/Library';
 import { Player } from '@screens/Player';
-import { Chapters } from '@screens/Chapters';
 import { theme } from '@consts/theme';
 
 export type RootStackParamList = {
@@ -31,13 +32,9 @@ export function RootNavigator({ initialRoute }: Props) {
         animation: 'slide_from_right',
       }}
     >
+      <Stack.Screen name='FolderSetup' component={FolderSetup} options={{ headerShown: false }} />
       <Stack.Screen
-        name="FolderSetup"
-        component={FolderSetup}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Library"
+        name='Library'
         component={Library}
         options={{
           title: 'Vellum',
@@ -49,14 +46,14 @@ export function RootNavigator({ initialRoute }: Props) {
         }}
       />
       <Stack.Screen
-        name="Player"
+        name='Player'
         component={Player}
         options={{
           title: '',
         }}
       />
       <Stack.Screen
-        name="Chapters"
+        name='Chapters'
         component={Chapters}
         options={{
           title: 'Chapters',

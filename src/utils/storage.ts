@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { BookProgress } from '@consts/types';
 
 const KEYS = {
@@ -12,11 +13,14 @@ let progressCache: Record<string, BookProgress> | null = null;
 let nextProgressVersion = 0;
 let flushPromise: Promise<void> | null = null;
 const pendingProgressVersions: Record<string, number> = {};
-const progressWaiters: Record<string, Array<{
-  version: number;
-  resolve: () => void;
-  reject: (error: unknown) => void;
-}>> = {};
+const progressWaiters: Record<
+  string,
+  Array<{
+    version: number;
+    resolve: () => void;
+    reject: (error: unknown) => void;
+  }>
+> = {};
 
 async function loadProgressCache(): Promise<void> {
   if (progressCache !== null) return;

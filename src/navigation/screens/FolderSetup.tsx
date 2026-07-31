@@ -1,17 +1,15 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Directory } from 'expo-file-system';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Directory } from 'expo-file-system';
+
 import type { RootStackParamList } from '@navigation/index';
-import { theme } from '@consts/theme';
 import * as Storage from '@utils/storage';
+import { theme } from '@consts/theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>;
 
@@ -37,24 +35,22 @@ export function FolderSetup() {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <MaterialCommunityIcons name="book-open-variant" color={theme.colors.primary} style={styles.icon} />
+        <MaterialCommunityIcons
+          name='book-open-variant'
+          color={theme.colors.primary}
+          style={styles.icon}
+        />
 
         <Text style={styles.heading}>Welcome to Vellum</Text>
 
         <Text style={styles.description}>
-          Your local audiobook player. To get started, choose the folder where
-          your audiobooks are stored. Each sub-folder will be treated as a
-          separate audiobook.
+          Your local audiobook player. To get started, choose the folder where your audiobooks are
+          stored. Each sub-folder will be treated as a separate audiobook.
         </Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          activeOpacity={0.8}
-          onPress={handleSelectFolder}
-        >
+        <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={handleSelectFolder}>
           <Text style={styles.buttonText}>CHOOSE FOLDER</Text>
         </TouchableOpacity>
-
       </View>
     </View>
   );
@@ -99,5 +95,5 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: theme.fontSize.lg,
     fontWeight: '700',
-  }
+  },
 });

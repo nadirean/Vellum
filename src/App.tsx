@@ -1,11 +1,14 @@
-import { NavigationContainer } from '@react-navigation/native';
-import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet, StatusBar } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+
+import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
+
+import * as SplashScreen from 'expo-splash-screen';
+
 import { RootNavigator } from '@navigation';
 import { PlayerProvider } from '@contexts/PlayerContext';
-import { theme } from '@consts/theme';
 import * as Storage from '@utils/storage';
+import { theme } from '@consts/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -40,8 +43,8 @@ export function App() {
   if (baseFolder === undefined) {
     return (
       <View style={styles.loading}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.background} />
-        <ActivityIndicator color={theme.colors.primary} size="large" />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.background} />
+        <ActivityIndicator color={theme.colors.primary} size='large' />
       </View>
     );
   }
@@ -49,7 +52,7 @@ export function App() {
   return (
     <PlayerProvider>
       <NavigationContainer theme={navTheme}>
-        <StatusBar barStyle="light-content" backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
         <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
       </NavigationContainer>
     </PlayerProvider>

@@ -1,0 +1,18 @@
+# Ignore artifacts
+node_modules
+build
+dist
+.expo
+.web
+android
+**/android/**
+*.min.js
+*.log
+.DS_Store
+coverage
+.env
+.env.local
+assets/**/generated/**/*
+README.md
+app.json
+tsconfig.json

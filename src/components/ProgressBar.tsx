@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, GestureResponderEvent, LayoutChangeEvent } from 'react-native';
+
+import { GestureResponderEvent, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+
 import { theme } from '@consts/theme';
 
 interface ProgressBarProps {
@@ -96,12 +98,7 @@ export function ProgressBar({
     >
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${Math.min(100, displayProgress * 100)}%` }]} />
-        <View
-          style={[
-            styles.thumb,
-            { left: `${Math.min(100, displayProgress * 100)}%` },
-          ]}
-        />
+        <View style={[styles.thumb, { left: `${Math.min(100, displayProgress * 100)}%` }]} />
       </View>
     </View>
   );
