@@ -31,6 +31,11 @@ const navTheme = {
   },
 };
 
+/**
+ * App shell that reads the persisted base folder synchronously from MMKV to pick the initial
+ * route (FolderSetup on first run, otherwise the Library), hides the splash screen once mounted,
+ * and wraps the navigation tree in the MobX StoreProvider and gesture-handler root view.
+ */
 export default function App() {
   const [baseFolder] = useState<string | null>(() => LocalStore.getBaseFolder());
 

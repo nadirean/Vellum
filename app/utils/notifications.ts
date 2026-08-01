@@ -1,7 +1,16 @@
+/**
+ * Playback notification handling for expo-notifications: requests permission, registers the
+ * notification channel and category on Android, and schedules/updates a sticky "Playing/Paused"
+ * notification with a toggle action button whose taps are handled via notification responses.
+ */
 import * as Notifications from 'expo-notifications';
 
 import { PLAYBACK_CATEGORY_ID, PLAYBACK_CHANNEL_ID, PlaybackAction } from '@consts/notifications';
 
+/**
+ * Requests notification permission (falling back silently when denied) and registers the playback
+ * channel and toggle category on Android. Returns false when permission is not granted.
+ */
 export async function setupNotifications() {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
@@ -30,6 +39,11 @@ export async function setupNotifications() {
   ]);
 }
 
+/**
+ * Schedules (or updates, by fixed identifier) the sticky playback notification showing the current
+ * play state and progress, with the toggle action category attached. No sound/banner is shown so
+ * frequent progress updates stay silent.
+ */
 export async function updatePlaybackNotification(
   title: string,
   author: string,
@@ -60,6 +74,7 @@ export async function updatePlaybackNotification(
   });
 }
 
+/** Dismisses the sticky playback notification, e.g. when no book is loaded anymore. */
 export async function dismissPlaybackNotification() {
   await Notifications.dismissNotificationAsync('playback-notification');
 }

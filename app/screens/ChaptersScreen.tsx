@@ -9,6 +9,10 @@ import { getChapterName } from '@utils/chapterName';
 import { formatTime } from '@utils/time';
 import { theme } from '@consts/theme';
 
+/**
+ * Chapter list for the loaded audiobook. Each row shows the chapter number, formatted name, and
+ * measured duration; the active chapter is highlighted and tapping a row jumps to that chapter.
+ */
 export const ChaptersScreen = observer(function ChaptersScreen() {
   const player = usePlayerStore();
   const { currentBook, currentChapterIndex, chapterDurations } = player;

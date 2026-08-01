@@ -1,3 +1,4 @@
+// File extensions treated as playable audiobook chapters during scanning.
 export const AUDIO_EXTENSIONS = new Set([
   '.mp3',
   '.m4a',
@@ -10,4 +11,5 @@ export const AUDIO_EXTENSIONS = new Set([
   '.wma',
 ]);
 
+// File extensions accepted as a book's cover image.
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);

@@ -12,6 +12,10 @@ interface PlaybackControlsProps {
   onSeekRelative: (deltaMs: number) => void;
 }
 
+/**
+ * Transport controls: rewind 60 seconds, play/pause toggle, and forward 60 seconds. Seeks are
+ * expressed as relative deltas so the caller (the player store) decides how to apply them.
+ */
 export function PlaybackControls({
   isPlaying,
   onTogglePlayPause,

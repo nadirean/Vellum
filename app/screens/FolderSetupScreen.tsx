@@ -11,6 +11,11 @@ import type { RootStackParamList } from '@type/RouterTypes';
 import * as LocalStore from '@utils/localStore';
 import { theme } from '@consts/theme';
 
+/**
+ * First-run onboarding screen shown when no base folder is configured. Lets the user pick the
+ * folder containing their audiobooks; the selection is persisted synchronously to MMKV and the
+ * navigation stack is reset to the Library.
+ */
 export function FolderSetupScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>>();
 

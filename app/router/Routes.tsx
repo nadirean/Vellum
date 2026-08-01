@@ -14,6 +14,10 @@ interface Props {
   initialRoute: keyof RootStackParamList;
 }
 
+/**
+ * Native stack navigator wiring the four screens with a consistent header style. The initial
+ * route is chosen by the app shell based on whether a base folder has been selected yet.
+ */
 export function Routes({ initialRoute }: Props) {
   return (
     <Stack.Navigator

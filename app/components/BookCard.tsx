@@ -17,6 +17,11 @@ interface BookCardProps {
   coverFocusY?: number; // 0–100, default 50
 }
 
+/**
+ * Library list card for a single audiobook. Shows the focused cover (or a headphones placeholder),
+ * title/author, a thin progress bar when the book is in progress, and a play badge when it is the
+ * currently playing book. Pressing the card opens the player for that book.
+ */
 export function BookCard({
   title,
   author,

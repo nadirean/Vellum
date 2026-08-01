@@ -19,6 +19,10 @@ interface NowPlayingProps {
   onLongPressCover: () => void;
 }
 
+/**
+ * Player "now playing" block: the current chapter index/name, the vertically-focusable cover image
+ * (long-press opens the cover focus editor), and the book's title and author.
+ */
 export function NowPlaying({
   chapterIndex,
   chapterCount,

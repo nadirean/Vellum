@@ -17,6 +17,11 @@ import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import { getChapterName } from '@utils/chapterName';
 import { theme } from '@consts/theme';
 
+/**
+ * Full-screen player for the current audiobook. A thin composer that wires the player and UI
+ * stores into the presentational components (NowPlaying, PlayerProgress, PlaybackControls) and
+ * hosts the cover-focus and rate modals. The header holds the chapter list and rate buttons.
+ */
 export const PlayerScreen = observer(function PlayerScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Player'>>();
   const player = usePlayerStore();

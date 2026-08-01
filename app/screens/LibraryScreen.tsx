@@ -25,6 +25,11 @@ import { computeProgressMap } from '@utils/progress';
 import { scanAudiobooks } from '@utils/scanner';
 import { theme } from '@consts/theme';
 
+/**
+ * Library screen showing every audiobook found in the selected base folder. It scans the folder
+ * (only re-scanning when the folder changes), computes each book's overall progress from persisted
+ * data, and renders a pull-to-refreshable card list. The header button re-opens the folder picker.
+ */
 export const LibraryScreen = observer(function LibraryScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Library'>>();
   const player = usePlayerStore();

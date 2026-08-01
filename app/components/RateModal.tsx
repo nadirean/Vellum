@@ -12,6 +12,10 @@ interface RateModalProps {
   onClose: () => void;
 }
 
+/**
+ * Modal listing the available playback rates (RATES). The active rate is highlighted, tapping a row
+ * selects it, and tapping the dimmed backdrop closes the modal without changing the rate.
+ */
 export function RateModal({ visible, rate, onSelect, onClose }: RateModalProps) {
   return (
     <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>

@@ -63,6 +63,11 @@ async function measureDuration(uri: string): Promise<number> {
   });
 }
 
+/**
+ * Scan every chapter of a book with a temporary player to measure its duration, batching the
+ * measurements so only a few players exist at once. Returns a duration array matching the chapter
+ * order, with 0 for any chapter that could not be measured.
+ */
 async function scanChapterDurations(book: Audiobook): Promise<number[]> {
   const durations: number[] = new Array(book.chapters.length).fill(0);
 
@@ -80,6 +85,12 @@ async function scanChapterDurations(book: Audiobook): Promise<number[]> {
 /*  Store                                                              */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Owns all playback state for the whole app: the currently loaded audiobook, active chapter,
+ * position, rate, and chapter durations, plus the native expo-audio player and every listener,
+ * timer, and MobX reaction wired up during setup. Booting the store hydrates persisted state and
+ * setup() begins reacting to playback changes to persist progress and keep the notification in sync.
+ */
 export class PlayerStore {
   // Observables
   currentBook: Audiobook | null = null;
@@ -124,10 +135,12 @@ export class PlayerStore {
 
   /* ---- derived values ---- */
 
+  /** Sum of every measured chapter duration, i.e. the whole book's length in ms. */
   get totalBookDurationMs(): number {
     return this.chapterDurations.reduce((s, d) => s + d, 0);
   }
 
+  /** Book-wide position in ms: the sum of prior chapter durations plus the current position. */
   get bookPositionMs(): number {
     const prev = this.chapterDurations
       .slice(0, this.currentChapterIndex)
@@ -135,6 +148,7 @@ export class PlayerStore {
     return prev + this.positionMs;
   }
 
+  /** Overall book progress as a percentage (0–100), 0 when the total duration is unknown. */
   get bookProgress(): number {
     return this.totalBookDurationMs > 0
       ? (this.bookPositionMs / this.totalBookDurationMs) * 100
@@ -143,6 +157,11 @@ export class PlayerStore {
 
   /* ---- setup / dispose ---- */
 
+  /**
+   * Boots background playback support: configures the audio session for background/silent-mode
+   * playback, registers the playback notification, and wires the reaction-based side effects that
+   * persist progress (on pause, every 5s, and on backgrounding) and keep the notification current.
+   */
   setup() {
     void setAudioModeAsync({
       playsInSilentMode: true,
@@ -232,6 +251,11 @@ export class PlayerStore {
     );
   }
 
+  /**
+   * Tears down everything setup() created: notification/app-state listeners, the progress and
+   * notification reactions, the save interval, and the native player. Called by the provider when
+   * the app is disposed.
+   */
   dispose() {
     this.notificationResponseSub?.remove();
     this.appStateSub?.remove();
@@ -259,6 +283,11 @@ export class PlayerStore {
 
   /* ---- persistence ---- */
 
+  /**
+   * Synchronously writes the current chapter index, position, measured durations, rate, and
+   * timestamp into the persisted progress map. No-op while a book is loading to avoid capturing a
+   * half-switched state.
+   */
   persistCurrentProgress() {
     const book = this.currentBook;
     if (!book || this.isLoading) return;
@@ -274,6 +303,12 @@ export class PlayerStore {
 
   /* ---- core: load a single chapter's audio ---- */
 
+  /**
+   * Loads a single chapter's audio into the (reused) native player, updates the observable state to
+   * point at that chapter, seeks to the given position once loaded, and starts playing when asked.
+   * Also records the chapter's measured duration for progress bookkeeping. Re-entrant while a load
+   * is already in flight (skipped) so rapid chapter switches don't race.
+   */
   async loadChapterAudio(
     book: Audiobook,
     chapterIndex: number,
@@ -344,6 +379,7 @@ export class PlayerStore {
     }
   }
 
+  /** Resolves once the player reports itself loaded, with a safety timeout so a stuck load never hangs. */
   private waitForPlayerLoad(player: AudioPlayer): Promise<void> {
     return new Promise((resolve) => {
       const check = () => {
@@ -359,6 +395,11 @@ export class PlayerStore {
     });
   }
 
+  /**
+   * Player status callback mirroring position, duration, and playing state into observables. Guards
+   * against intermediate seek telemetry (the pending-seek window), folds better duration values back
+   * into chapterDurations, and auto-advances to the next chapter when one finishes.
+   */
   handlePlaybackStatus(status: AudioStatus) {
     if (!status.isLoaded) return;
 
@@ -400,6 +441,11 @@ export class PlayerStore {
 
   /* ---- public API ---- */
 
+  /**
+   * Opens a book: saves the previous book's progress, restores the stored chapter/position/rate (or
+   * measures chapter durations from scratch when none are persisted), then starts loading the
+   * restored chapter without playing. Switching to the already-loaded book is a no-op.
+   */
   async loadBook(book: Audiobook) {
     // Already loaded – skip
     if (this.currentBook?.id === book.id && !this.isLoading) return;
@@ -451,6 +497,7 @@ export class PlayerStore {
     }
   }
 
+  /** Toggles the native player between playing and paused; no-op when no player exists yet. */
   togglePlayPause() {
     const player = this.player;
     if (!player) return;
@@ -461,6 +508,11 @@ export class PlayerStore {
     }
   }
 
+  /**
+   * Seeks by a signed delta in ms relative to the current position, wrapping into the previous or
+   * next chapter (loading it as needed) when the seek crosses a chapter boundary, and clamping to
+   * the current chapter's edges otherwise.
+   */
   async seekRelative(deltaMs: number) {
     const player = this.player;
     if (!player || !player.isLoaded) return;
@@ -506,6 +558,11 @@ export class PlayerStore {
     }
   }
 
+  /**
+   * Seeks to an absolute book-wide position in ms. Walks the measured durations to find the
+   * enclosing chapter, then either seeks in place (same chapter) or loads that chapter at the
+   * computed in-chapter position.
+   */
   async seekToBookPosition(targetBookMs: number) {
     const book = this.currentBook;
     if (!book) return;
@@ -532,6 +589,7 @@ export class PlayerStore {
     }
   }
 
+  /** Sets the playback rate on both the store and the native player. */
   setRate(newRate: number) {
     this.rate = newRate;
     const player = this.player;
@@ -540,6 +598,7 @@ export class PlayerStore {
     }
   }
 
+  /** Jumps to a chapter by index, starting it from the beginning while keeping the current play state. */
   async goToChapter(index: number) {
     const book = this.currentBook;
     if (!book || index < 0 || index >= book.chapters.length) return;

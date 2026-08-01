@@ -12,6 +12,10 @@ interface PlayerHeaderRightProps {
   onOpenRate: () => void;
 }
 
+/**
+ * Right side of the player header: a chapter-list button and the current playback rate as text
+ * (e.g. "1.5x"). Tapping either opens the corresponding modal/screen via the passed callbacks.
+ */
 export function PlayerHeaderRight({ rate, onOpenChapters, onOpenRate }: PlayerHeaderRightProps) {
   return (
     <View style={styles.headerRight}>
