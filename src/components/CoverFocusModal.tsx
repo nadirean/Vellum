@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Image, Modal, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { theme } from '@consts/theme';
 
@@ -14,6 +16,11 @@ interface CoverFocusModalProps {
 
 const PREVIEW_SIZE = 260;
 
+/**
+ * Modal for adjusting the vertical crop focus of a portrait cover. The drag is driven by a
+ * native gesture (`Gesture.Pan`) and the image position by a reanimated shared value, so the
+ * image tracks the finger on the UI thread instead of re-rendering on every move event.
+ */
 export function CoverFocusModal({
   visible,
   coverUri,
@@ -22,59 +29,47 @@ export function CoverFocusModal({
   onClose,
 }: CoverFocusModalProps) {
   const [naturalAR, setNaturalAR] = useState<number | null>(null);
-  const [focusY, setFocusY] = useState(initialFocusY);
-
-  const focusYRef = useRef(initialFocusY);
-  const startRef = useRef(initialFocusY);
-  const overflowRef = useRef(0);
+  const focusY = useSharedValue(initialFocusY);
+  const startFocusY = useSharedValue(initialFocusY);
 
   useEffect(() => {
     if (visible && coverUri) {
-      setFocusY(initialFocusY);
-      focusYRef.current = initialFocusY;
+      focusY.value = initialFocusY;
+      startFocusY.value = initialFocusY;
       Image.getSize(
         coverUri,
         (w, h) => setNaturalAR(h / w),
         () => setNaturalAR(null),
       );
     }
-  }, [visible, coverUri, initialFocusY]);
+  }, [visible, coverUri, initialFocusY, focusY, startFocusY]);
 
   const renderedHeight = naturalAR && naturalAR > 1 ? PREVIEW_SIZE * naturalAR : PREVIEW_SIZE;
   const overflow = Math.max(0, renderedHeight - PREVIEW_SIZE);
-  overflowRef.current = overflow;
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > 2,
-        onPanResponderGrant: () => {
-          startRef.current = focusYRef.current;
-        },
-        onPanResponderMove: (_, gs) => {
-          const ov = overflowRef.current;
-          if (ov <= 0) return;
-          // Drag down → image shifts down → more of the top visible → focusY decreases
-          const newVal = Math.max(0, Math.min(100, startRef.current - (gs.dy / ov) * 100));
-          focusYRef.current = newVal;
-          setFocusY(newVal);
-        },
-      }),
-    [],
-  );
-
-  const imageTop = overflow > 0 ? -(overflow * (focusY / 100)) : 0;
   const canAdjust = naturalAR !== null && naturalAR > 1;
 
+  const pan = Gesture.Pan()
+    .enabled(overflow > 0)
+    .onStart(() => {
+      startFocusY.value = focusY.value;
+    })
+    .onUpdate((e) => {
+      // Drag down → image shifts down → more of the top visible → focusY decreases
+      const next = startFocusY.value - (e.translationY / overflow) * 100;
+      focusY.value = Math.max(0, Math.min(100, next));
+    });
+
+  const imageStyle = useAnimatedStyle(() => ({
+    top: overflow > 0 ? -(overflow * (focusY.value / 100)) : 0,
+  }));
+
   const handleSave = () => {
-    onSave(Math.round(focusY));
+    onSave(Math.round(focusY.value));
     onClose();
   };
 
   const handleReset = () => {
-    setFocusY(50);
-    focusYRef.current = 50;
+    focusY.value = 50;
   };
 
   return (
@@ -89,25 +84,27 @@ export function CoverFocusModal({
             {canAdjust ? 'Drag the image up or down' : "This cover doesn't need adjustment"}
           </Text>
 
-          <View style={styles.previewFrame} {...(canAdjust ? panResponder.panHandlers : {})}>
-            {canAdjust ? (
-              <Image
-                source={{ uri: coverUri }}
-                style={{
-                  position: 'absolute',
-                  width: PREVIEW_SIZE,
-                  height: renderedHeight,
-                  top: imageTop,
-                }}
-              />
-            ) : (
-              <Image
-                source={{ uri: coverUri }}
-                style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE }}
-                resizeMode='cover'
-              />
-            )}
-          </View>
+          <GestureDetector gesture={pan}>
+            <View style={styles.previewFrame}>
+              {canAdjust ? (
+                <Animated.Image
+                  source={{ uri: coverUri }}
+                  style={{
+                    position: 'absolute',
+                    width: PREVIEW_SIZE,
+                    height: renderedHeight,
+                    ...imageStyle,
+                  }}
+                />
+              ) : (
+                <Image
+                  source={{ uri: coverUri }}
+                  style={{ width: PREVIEW_SIZE, height: PREVIEW_SIZE }}
+                  resizeMode='cover'
+                />
+              )}
+            </View>
+          </GestureDetector>
 
           <View style={styles.buttons}>
             <TouchableOpacity style={styles.resetBtn} onPress={handleReset}>

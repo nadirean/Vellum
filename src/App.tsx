@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -42,24 +43,31 @@ export function App() {
 
   if (baseFolder === undefined) {
     return (
-      <View style={styles.loading}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.background} />
-        <ActivityIndicator color={theme.colors.primary} size='large' />
-      </View>
+      <GestureHandlerRootView style={styles.root}>
+        <View style={styles.loading}>
+          <StatusBar barStyle='light-content' backgroundColor={theme.colors.background} />
+          <ActivityIndicator color={theme.colors.primary} size='large' />
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
   return (
-    <StoreProvider>
-      <NavigationContainer theme={navTheme}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
-        <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
-      </NavigationContainer>
-    </StoreProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <StoreProvider>
+        <NavigationContainer theme={navTheme}>
+          <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+          <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
+        </NavigationContainer>
+      </StoreProvider>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   loading: {
     flex: 1,
     justifyContent: 'center',

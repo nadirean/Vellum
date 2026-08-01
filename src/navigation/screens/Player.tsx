@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 
 import {
@@ -18,7 +19,6 @@ import { observer } from 'mobx-react-lite';
 
 import { CoverFocusModal } from '@components/CoverFocusModal';
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
-import { ProgressBar } from '@components/ProgressBar';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import { theme } from '@consts/theme';
 
@@ -54,8 +54,8 @@ export const Player = observer(function Player() {
   const ui = useUIStore();
   const [showRateModal, setShowRateModal] = useState(false);
   const [showFocusModal, setShowFocusModal] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragProgress, setDragProgress] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [seekPositionMs, setSeekPositionMs] = useState(0);
 
   const {
     currentBook,
@@ -99,23 +99,19 @@ export const Player = observer(function Player() {
     });
   }, [navigation, rate]);
 
-  const handleProgressPreviewChange = (ratio: number) => {
-    setDragProgress(ratio);
+  const handleProgressPreviewChange = (positionMsValue: number) => {
+    setSeekPositionMs(positionMsValue);
   };
 
-  const handleProgressSeek = async (ratio: number) => {
-    setDragProgress(ratio);
+  const handleProgressSeek = async (positionMsValue: number) => {
+    setIsSeeking(false);
     if (totalBookDurationMs > 0) {
-      await player.seekToBookPosition(ratio * totalBookDurationMs);
+      await player.seekToBookPosition(positionMsValue);
     }
   };
 
   const handleDragStart = () => {
-    setIsDragging(true);
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
+    setIsSeeking(true);
   };
 
   if (!currentBook) {
@@ -141,14 +137,11 @@ export const Player = observer(function Player() {
   const chapter = currentBook.chapters[currentChapterIndex];
   const chapterName = chapter ? chapter.filename.replace(/\.\w+$/, '') : '';
   const coverFocusY = ui.getCoverFocusY(currentBook.id);
-
-  const progressRatio = isDragging
-    ? dragProgress
-    : totalBookDurationMs > 0
-      ? bookPositionMs / totalBookDurationMs
-      : 0;
-  const displayBookPositionMs = isDragging ? dragProgress * totalBookDurationMs : bookPositionMs;
-  const displayBookProgress = isDragging ? dragProgress * 100 : bookProgress;
+  const displayBookPositionMs = isSeeking ? seekPositionMs : bookPositionMs;
+  const displayBookProgress =
+    isSeeking && totalBookDurationMs > 0
+      ? (seekPositionMs / totalBookDurationMs) * 100
+      : bookProgress;
   const displayTimeLeftMs = Math.max(0, totalBookDurationMs - displayBookPositionMs);
   const displayTimeLeftWithTempoMs = rate > 0 ? displayTimeLeftMs / rate : displayTimeLeftMs;
 
@@ -215,12 +208,19 @@ export const Player = observer(function Player() {
 
       {/* Progress Bar */}
       <View style={styles.progressSection}>
-        <ProgressBar
-          progress={progressRatio}
-          onPreviewChange={handleProgressPreviewChange}
-          onSeek={handleProgressSeek}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={Math.max(1, totalBookDurationMs)}
+          value={Math.min(displayBookPositionMs, Math.max(1, totalBookDurationMs))}
+          minimumTrackTintColor={theme.colors.progressFill}
+          maximumTrackTintColor={theme.colors.progressBg}
+          thumbTintColor={theme.colors.primaryLight}
+          onValueChange={handleProgressPreviewChange}
+          onSlidingStart={handleDragStart}
+          onSlidingComplete={(value) => {
+            void handleProgressSeek(value);
+          }}
         />
 
         <View style={styles.timeRow}>
@@ -422,6 +422,10 @@ const styles = StyleSheet.create({
   progressSection: {
     width: '100%',
     marginTop: theme.spacing.md,
+  },
+  slider: {
+    width: '100%',
+    height: 36,
   },
   timeRow: {
     flexDirection: 'row',

@@ -54,6 +54,11 @@ configured.
   managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
+- The seek bar is the native `@react-native-community/slider`, declared directly in `Player.tsx`;
+  it's "write-only" during drag, so the screen mirrors a local `isSeeking`/`seekPositionMs` back
+  into `value` instead of feeding it live progress. The CoverFocusModal drag uses
+  `react-native-gesture-handler` `Gesture.Pan` + a reanimated `useSharedValue` so the image tracks
+  the finger on the UI thread.
 
 ## Gotchas
 
@@ -66,5 +71,8 @@ configured.
   post-`await` writes in `runInAction`.
 - Don't mark store fields `private` if they're referenced in the `makeAutoObservable` overrides
   object — TypeScript excludes private members from `AnnotationsMap`.
+- Gestures need `GestureHandlerRootView` wrapping the app root (`src/App.tsx`); RNGH 2.30 + worklets
+  0.7 are already deps. No `babel.config.js` exists — `babel-preset-expo` auto-adds the
+  `react-native-worklets/plugin` (or `react-native-reanimated/plugin`) when present.
 - Notification category registers only the TOGGLE action button; skip-back/forward work via
   notification responses (see `src/utils/notifications.ts`).
