@@ -137,14 +137,6 @@ export class PlayerStore {
       : 0;
   }
 
-  get timeLeftMs(): number {
-    return Math.max(0, this.totalBookDurationMs - this.bookPositionMs);
-  }
-
-  get timeLeftWithTempoMs(): number {
-    return this.rate > 0 ? this.timeLeftMs / this.rate : this.timeLeftMs;
-  }
-
   /* ---- setup / dispose ---- */
 
   setup() {

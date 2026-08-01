@@ -22,9 +22,9 @@ import type { RootStackParamList } from '@type/RouterTypes';
 import { CoverFocusModal } from '@components/CoverFocusModal';
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
+import { getChapterName } from '@utils/chapterName';
 import { formatTime } from '@utils/time';
 import { RATES } from '@consts/playback';
-import { EXTENSION_REGEX } from '@consts/regexes';
 import { COVER_CONTENT_SIZE } from '@consts/sizes';
 import { theme } from '@consts/theme';
 
@@ -49,7 +49,6 @@ export const PlayerScreen = observer(function PlayerScreen() {
     isLoading,
     totalBookDurationMs,
     bookPositionMs,
-    bookProgress,
   } = player;
 
   const handleSaveCoverFocus = (focusY: number) => {
@@ -118,20 +117,15 @@ export const PlayerScreen = observer(function PlayerScreen() {
     );
   }
 
-  const chapter = currentBook.chapters[currentChapterIndex];
-  const chapterName = chapter ? chapter.filename.replace(EXTENSION_REGEX, '') : '';
+  const chapterName = getChapterName(currentBook.chapters[currentChapterIndex]);
   const coverFocusY = ui.getCoverFocusY(currentBook.id);
-  const displayBookPositionMs = isSeeking ? seekPositionMs : bookPositionMs;
-  const displayBookProgress =
-    isSeeking && totalBookDurationMs > 0
-      ? (seekPositionMs / totalBookDurationMs) * 100
-      : bookProgress;
-  const displayTimeLeftMs = Math.max(0, totalBookDurationMs - displayBookPositionMs);
-  const displayTimeLeftWithTempoMs = rate > 0 ? displayTimeLeftMs / rate : displayTimeLeftMs;
 
-  // Use the parsed title and author from currentBook
-  const displayTitle = currentBook.title;
-  const author = currentBook.author;
+  // While dragging the slider, preview the dragged position instead of the live one
+  const displayPositionMs = isSeeking ? seekPositionMs : bookPositionMs;
+  const displayProgress =
+    totalBookDurationMs > 0 ? (displayPositionMs / totalBookDurationMs) * 100 : 0;
+  const displayTimeLeftMs = Math.max(0, totalBookDurationMs - displayPositionMs);
+  const displayTimeLeftWithTempoMs = displayTimeLeftMs / rate;
 
   return (
     <ScrollView
@@ -179,11 +173,11 @@ export const PlayerScreen = observer(function PlayerScreen() {
 
       {/* Title & Author */}
       <Text style={styles.title} numberOfLines={2}>
-        {displayTitle}
+        {currentBook.title}
       </Text>
-      {author && author !== 'Unknown Author' && (
+      {currentBook.author && currentBook.author !== 'Unknown Author' && (
         <Text style={styles.author} numberOfLines={1}>
-          {author}
+          {currentBook.author}
         </Text>
       )}
 
@@ -196,7 +190,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
           style={styles.slider}
           minimumValue={0}
           maximumValue={Math.max(1, totalBookDurationMs)}
-          value={Math.min(displayBookPositionMs, Math.max(1, totalBookDurationMs))}
+          value={Math.min(displayPositionMs, Math.max(1, totalBookDurationMs))}
           minimumTrackTintColor={theme.colors.progressFill}
           maximumTrackTintColor={theme.colors.progressBg}
           thumbTintColor={theme.colors.primaryLight}
@@ -209,7 +203,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
 
         <View style={styles.timeRow}>
           <Text style={styles.timeText} numberOfLines={1}>
-            {formatTime(displayBookPositionMs)} ({displayBookProgress.toFixed(1)}%)
+            {formatTime(displayPositionMs)} ({displayProgress.toFixed(1)}%)
           </Text>
           <Text style={styles.timeText} numberOfLines={1}>
             -{formatTime(displayTimeLeftMs)}

@@ -5,8 +5,8 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { observer } from 'mobx-react-lite';
 
 import { usePlayerStore } from '@providers/StoreProvider';
+import { getChapterName } from '@utils/chapterName';
 import { formatTime } from '@utils/time';
-import { EXTENSION_REGEX } from '@consts/regexes';
 import { theme } from '@consts/theme';
 
 export const ChaptersScreen = observer(function ChaptersScreen() {
@@ -44,7 +44,7 @@ export const ChaptersScreen = observer(function ChaptersScreen() {
                     style={[styles.chapterText, isCurrent && styles.chapterTextActive]}
                     numberOfLines={2}
                   >
-                    {ch.filename.replace(EXTENSION_REGEX, '')}
+                    {getChapterName(ch)}
                   </Text>
                   {dur > 0 && <Text style={styles.chapterDur}>{formatTime(dur)}</Text>}
                 </View>
