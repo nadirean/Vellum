@@ -20,8 +20,8 @@ import { Audiobook } from '@type/LibraryTypes';
 import type { RootStackParamList } from '@type/RouterTypes';
 import { BookCard } from '@components/BookCard';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
+import * as LocalStore from '@utils/localStore';
 import { scanAudiobooks } from '@utils/scanner';
-import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
@@ -37,7 +37,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
 
   const loadBooks = useCallback(async () => {
-    const folder = await Storage.getBaseFolder();
+    const folder = LocalStore.getBaseFolder();
     if (!folder) {
       setIsScanning(false);
       return;
@@ -68,7 +68,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
   }, [books]);
 
   const refreshProgressFor = async (bookList: Audiobook[]) => {
-    const all = await Storage.getAllProgress();
+    const all = LocalStore.getAllProgress();
     const map: Record<string, number> = {};
     for (const b of bookList) {
       const p = all[b.id];

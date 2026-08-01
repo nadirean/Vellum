@@ -5,8 +5,8 @@ import * as Notifications from 'expo-notifications';
 import { IReactionDisposer, makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { Audiobook } from '@type/LibraryTypes';
+import * as LocalStore from '@utils/localStore';
 import * as NotificationUtils from '@utils/notifications';
-import * as Storage from '@utils/storage';
 import { PlaybackAction } from '@consts/notifications';
 import {
   CHAPTER_SCAN_BATCH,
@@ -176,25 +176,31 @@ export class PlayerStore {
       () => (this.currentBook && !this.isLoading ? this.isPlaying : null),
       (isPlaying) => {
         if (isPlaying === false && this.currentBook) {
-          this.persistCurrentProgress().catch((err) => {
+          try {
+            this.persistCurrentProgress();
+          } catch (err) {
             console.error('Failed to persist progress for book:', this.currentBook?.id, err);
-          });
+          }
         }
       },
     );
     this.saveTimer = setInterval(() => {
       if (this.currentBook && !this.isLoading) {
-        this.persistCurrentProgress().catch((err) => {
+        try {
+          this.persistCurrentProgress();
+        } catch (err) {
           console.error('Failed to persist progress for book:', this.currentBook?.id, err);
-        });
+        }
       }
     }, PROGRESS_SAVE_INTERVAL_MS);
 
     this.appStateSub = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'background' || nextState === 'inactive') {
-        this.persistCurrentProgress().catch((err) => {
+        try {
+          this.persistCurrentProgress();
+        } catch (err) {
           console.error('Failed to persist progress while app was backgrounding:', err);
-        });
+        }
       }
     });
 
@@ -257,11 +263,11 @@ export class PlayerStore {
 
   /* ---- persistence ---- */
 
-  async persistCurrentProgress() {
+  persistCurrentProgress() {
     const book = this.currentBook;
     if (!book || this.isLoading) return;
 
-    await Storage.setBookProgress(book.id, {
+    LocalStore.saveBookProgress(book.id, {
       currentChapterIndex: this.currentChapterIndex,
       positionMs: this.positionMs,
       chapterDurations: this.chapterDurations,
@@ -393,7 +399,7 @@ export class PlayerStore {
     // CRITICAL: Save the current book's progress immediately before switching
     if (this.currentBook) {
       try {
-        await this.persistCurrentProgress();
+        this.persistCurrentProgress();
       } catch (err) {
         console.error('Failed to save progress for current book before switching:', err);
       }
@@ -404,7 +410,7 @@ export class PlayerStore {
 
     try {
       // Check stored progress
-      const progress = await Storage.getBookProgress(book.id);
+      const progress = LocalStore.getBookProgress(book.id);
 
       let durations: number[];
       if (

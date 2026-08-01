@@ -39,9 +39,9 @@ configured.
   `LibraryTypes.ts` = domain types), plus `stores/`, `providers/`, `components/`, `consts/`,
   `utils/`.
 - `consts/` holds all shared constants, split per domain: `theme.ts`, `sizes.ts`, `playback.ts`
-  (rates, timing), `files.ts` (audio/image extensions), `storage.ts` (AsyncStorage keys),
-  `notifications.ts` (channel/category IDs + `PlaybackAction`), and `regexes.ts` — every regex used
-  in the app lives here.
+  (rates, timing), `files.ts` (audio/image extensions), `storage.ts` (MMKV keys), `notifications.ts`
+  (channel/category IDs + `PlaybackAction`), and `regexes.ts` — every regex used in the app lives
+  here.
 - Stores (`app/stores/`) are MobX classes using
   `makeAutoObservable(this, { internalField: false, ... }, { autoBind: true })`. Non-observable
   fields (native player, listeners, timers, reaction disposers) must be listed in the overrides
@@ -55,15 +55,18 @@ configured.
   keeps the playback notification in sync.
 - Async flows (e.g. `loadBook`, `loadChapterAudio`) are auto-actions; observable writes that happen
   _after_ an `await` must be wrapped in `runInAction(...)` (MobX strict mode).
-- First run: App reads base folder from AsyncStorage; no folder → `FolderSetup`, else `Library`.
+- Persistence is synchronous via MMKV (`react-native-mmkv`, JSI — requires a native build, not Expo
+  Go). All reads/writes go through `app/utils/localStore.ts` (a single `createMMKV()` instance);
+  keys live in `app/consts/storage.ts`. `save*` calls are synchronous — no awaits.
+- First run: App reads base folder from MMKV; no folder → `FolderSetup`, else `Library`.
 - Each subfolder of the base folder is one audiobook. Title/author parsed from `Title [Author]`
   folder names; otherwise author = "Unknown Author" (`app/utils/scanner.ts:124`).
 - Library re-scans only when the base folder changes (`app/screens/LibraryScreen.tsx:46`).
-- Book progress (AsyncStorage `@vellum/bookProgress`) goes through a versioned, batched flush in
-  `app/utils/storage.ts`; `setBookProgress` awaits persistence. Saved every 5s, on pause, on
-  background, and before switching books.
-- Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus`,
-  managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
+- Book progress is a whole-blob map `Record<bookId, BookProgress>` under `@vellum/bookProgress.v1`,
+  written through synchronously on every save via `LocalStore.saveBookProgress`. Saved every 5s, on
+  pause, on background, and before switching books.
+- Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus.v1`
+  (whole-blob `Record<bookId, number>`), managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
 - The seek bar is the native `@react-native-community/slider`, declared directly in

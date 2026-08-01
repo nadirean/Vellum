@@ -1,10 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
-import * as Storage from '@utils/storage';
+import * as LocalStore from '@utils/localStore';
 
 /**
- * MobX store that manages the per-book cover focus (vertical crop 0–100, default 50).
- * Focus values are persisted to AsyncStorage and hydrated once during bootstrap.
+ * MobX store that manages the per-book cover focus (vertical crop 0-100, default 50).
+ * Focus values are persisted to MMKV and hydrated once during bootstrap.
  */
 export class UIStore {
   coverFocusByBook: Record<string, number> = {};
@@ -16,7 +16,7 @@ export class UIStore {
   /** Hydrate the cover focus map from persisted storage on app start. */
   async bootstrap() {
     try {
-      const all = await Storage.getAllCoverFocus();
+      const all = LocalStore.getAllCoverFocus();
       runInAction(() => {
         this.coverFocusByBook = all;
       });
@@ -25,22 +25,14 @@ export class UIStore {
     }
   }
 
-  /** Vertical focus (0–100) for a book, defaulting to 50 (centered). */
+  /** Vertical focus (0-100) for a book, defaulting to 50 (centered). */
   getCoverFocusY(bookId: string): number {
     return this.coverFocusByBook[bookId] ?? 50;
   }
 
-  /** Applies a new focus immediately and persists it asynchronously. */
+  /** Applies a new focus immediately and persists it synchronously. */
   setCoverFocusY(bookId: string, focusY: number) {
     this.coverFocusByBook = { ...this.coverFocusByBook, [bookId]: focusY };
-    void this.persistCoverFocus(bookId, focusY);
-  }
-
-  private async persistCoverFocus(bookId: string, focusY: number) {
-    try {
-      await Storage.setCoverFocusY(bookId, focusY);
-    } catch (err) {
-      console.warn('Failed to persist cover focus', err);
-    }
+    LocalStore.saveCoverFocusY(bookId, focusY);
   }
 }

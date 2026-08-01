@@ -8,7 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Directory } from 'expo-file-system';
 
 import type { RootStackParamList } from '@type/RouterTypes';
-import * as Storage from '@utils/storage';
+import * as LocalStore from '@utils/localStore';
 import { theme } from '@consts/theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>;
@@ -21,7 +21,7 @@ export function FolderSetupScreen() {
       const directory = await Directory.pickDirectoryAsync();
 
       if (directory && directory.uri) {
-        await Storage.setBaseFolder(directory.uri);
+        LocalStore.saveBaseFolder(directory.uri);
         navigation.reset({
           index: 0,
           routes: [{ name: 'Library' }],
