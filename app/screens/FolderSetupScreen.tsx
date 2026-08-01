@@ -11,10 +11,8 @@ import type { RootStackParamList } from '@type/RouterTypes';
 import * as LocalStore from '@utils/localStore';
 import { theme } from '@consts/theme';
 
-type Nav = NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>;
-
 export function FolderSetupScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>>();
 
   const handleSelectFolder = async () => {
     try {

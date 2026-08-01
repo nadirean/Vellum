@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   ActivityIndicator,
@@ -17,37 +18,22 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { observer } from 'mobx-react-lite';
 
+import type { RootStackParamList } from '@type/RouterTypes';
 import { CoverFocusModal } from '@components/CoverFocusModal';
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
+import { formatTime } from '@utils/time';
 import { RATES } from '@consts/playback';
 import { EXTENSION_REGEX } from '@consts/regexes';
 import { COVER_CONTENT_SIZE } from '@consts/sizes';
 import { theme } from '@consts/theme';
 
 /* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
-
-function formatTime(ms: number): string {
-  if (!isFinite(ms) || ms < 0) ms = 0;
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  }
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
-}
-
-/* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export const PlayerScreen = observer(function PlayerScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Player'>>();
   const player = usePlayerStore();
   const ui = useUIStore();
   const [showRateModal, setShowRateModal] = useState(false);
@@ -363,10 +349,6 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xl,
     backgroundColor: theme.colors.surfaceLight,
     elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
   },
   cover: {
     width: '100%',

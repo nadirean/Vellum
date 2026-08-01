@@ -21,13 +21,12 @@ import type { RootStackParamList } from '@type/RouterTypes';
 import { BookCard } from '@components/BookCard';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import * as LocalStore from '@utils/localStore';
+import { computeProgressMap } from '@utils/progress';
 import { scanAudiobooks } from '@utils/scanner';
 import { theme } from '@consts/theme';
 
-type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
-
 export const LibraryScreen = observer(function LibraryScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Library'>>();
   const player = usePlayerStore();
   const ui = useUIStore();
 
@@ -46,7 +45,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
     // Only re‑scan when folder changed
     if (folder === lastFolder && books.length > 0) {
       setIsScanning(false);
-      await refreshProgress();
+      refreshProgress();
       return;
     }
 
@@ -55,7 +54,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
       const scanned = await scanAudiobooks(folder);
       setBooks(scanned);
       setLastFolder(folder);
-      await refreshProgressFor(scanned);
+      setProgressMap(computeProgressMap(scanned));
     } catch (e) {
       console.error('Scan error:', e);
     } finally {
@@ -63,27 +62,9 @@ export const LibraryScreen = observer(function LibraryScreen() {
     }
   }, [lastFolder, books.length]);
 
-  const refreshProgress = useCallback(async () => {
-    await refreshProgressFor(books);
+  const refreshProgress = useCallback(() => {
+    setProgressMap(computeProgressMap(books));
   }, [books]);
-
-  const refreshProgressFor = async (bookList: Audiobook[]) => {
-    const all = LocalStore.getAllProgress();
-    const map: Record<string, number> = {};
-    for (const b of bookList) {
-      const p = all[b.id];
-      if (p && p.chapterDurations.length > 0) {
-        const total = p.chapterDurations.reduce((s, d) => s + d, 0);
-        if (total > 0) {
-          const elapsed =
-            p.chapterDurations.slice(0, p.currentChapterIndex).reduce((s, d) => s + d, 0) +
-            p.positionMs;
-          map[b.id] = (elapsed / total) * 100;
-        }
-      }
-    }
-    setProgressMap(map);
-  };
 
   // Scan on focus
   useFocusEffect(
