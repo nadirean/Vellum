@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { observer } from 'mobx-react-lite';
 
 import { usePlayerStore } from '@providers/StoreProvider';
+import { EXTENSION_REGEX } from '@consts/regexes';
 import { theme } from '@consts/theme';
 
 function formatTime(ms: number): string {
@@ -55,7 +56,7 @@ export const ChaptersScreen = observer(function ChaptersScreen() {
                     style={[styles.chapterText, isCurrent && styles.chapterTextActive]}
                     numberOfLines={2}
                   >
-                    {ch.filename.replace(/\.\w+$/, '')}
+                    {ch.filename.replace(EXTENSION_REGEX, '')}
                   </Text>
                   {dur > 0 && <Text style={styles.chapterDur}>{formatTime(dur)}</Text>}
                 </View>

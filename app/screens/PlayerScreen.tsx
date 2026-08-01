@@ -20,6 +20,9 @@ import { observer } from 'mobx-react-lite';
 import { CoverFocusModal } from '@components/CoverFocusModal';
 import { FocusedCoverImage } from '@components/FocusedCoverImage';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
+import { RATES } from '@consts/playback';
+import { EXTENSION_REGEX } from '@consts/regexes';
+import { COVER_CONTENT_SIZE } from '@consts/sizes';
 import { theme } from '@consts/theme';
 
 /* ------------------------------------------------------------------ */
@@ -38,11 +41,6 @@ function formatTime(ms: number): string {
   }
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
-
-const RATES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
-
-// coverWrapper is 272×272 with padding:6 + borderWidth:2 → content area = 256
-const COVER_CONTENT_SIZE = 256;
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
@@ -135,7 +133,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
   }
 
   const chapter = currentBook.chapters[currentChapterIndex];
-  const chapterName = chapter ? chapter.filename.replace(/\.\w+$/, '') : '';
+  const chapterName = chapter ? chapter.filename.replace(EXTENSION_REGEX, '') : '';
   const coverFocusY = ui.getCoverFocusY(currentBook.id);
   const displayBookPositionMs = isSeeking ? seekPositionMs : bookPositionMs;
   const displayBookProgress =

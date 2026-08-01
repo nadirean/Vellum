@@ -1,12 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { BookProgress } from '@type/LibraryTypes';
-
-const KEYS = {
-  BASE_FOLDER: '@vellum/baseFolder',
-  BOOK_PROGRESS: '@vellum/bookProgress',
-  COVER_FOCUS: '@vellum/coverFocus',
-};
+import { STORAGE_KEYS } from '@consts/storage';
 
 /* ---- In-memory cache to avoid constant disk reads ---- */
 let progressCache: Record<string, BookProgress> | null = null;
@@ -24,7 +19,7 @@ const progressWaiters: Record<
 
 async function loadProgressCache(): Promise<void> {
   if (progressCache !== null) return;
-  const raw = await AsyncStorage.getItem(KEYS.BOOK_PROGRESS);
+  const raw = await AsyncStorage.getItem(STORAGE_KEYS.BOOK_PROGRESS);
   if (!raw) {
     progressCache = {};
   } else {
@@ -97,7 +92,7 @@ async function runProgressFlush(): Promise<void> {
     const payload = JSON.stringify(progressCache ?? {});
 
     try {
-      await AsyncStorage.setItem(KEYS.BOOK_PROGRESS, payload);
+      await AsyncStorage.setItem(STORAGE_KEYS.BOOK_PROGRESS, payload);
     } catch (error) {
       for (const [bookId, version] of Object.entries(snapshotVersions)) {
         rejectProgressWaiters(bookId, version, error);
@@ -134,11 +129,11 @@ export async function flushBookProgress(): Promise<void> {
 }
 
 export async function getBaseFolder(): Promise<string | null> {
-  return AsyncStorage.getItem(KEYS.BASE_FOLDER);
+  return AsyncStorage.getItem(STORAGE_KEYS.BASE_FOLDER);
 }
 
 export async function setBaseFolder(uri: string): Promise<void> {
-  await AsyncStorage.setItem(KEYS.BASE_FOLDER, uri);
+  await AsyncStorage.setItem(STORAGE_KEYS.BASE_FOLDER, uri);
 }
 
 export async function getBookProgress(bookId: string): Promise<BookProgress | null> {
@@ -183,11 +178,11 @@ export async function getCoverFocusY(bookId: string): Promise<number> {
 export async function setCoverFocusY(bookId: string, focusY: number): Promise<void> {
   const all = await getAllCoverFocus();
   all[bookId] = focusY;
-  await AsyncStorage.setItem(KEYS.COVER_FOCUS, JSON.stringify(all));
+  await AsyncStorage.setItem(STORAGE_KEYS.COVER_FOCUS, JSON.stringify(all));
 }
 
 export async function getAllCoverFocus(): Promise<Record<string, number>> {
-  const raw = await AsyncStorage.getItem(KEYS.COVER_FOCUS);
+  const raw = await AsyncStorage.getItem(STORAGE_KEYS.COVER_FOCUS);
   if (!raw) return {};
   try {
     return JSON.parse(raw);

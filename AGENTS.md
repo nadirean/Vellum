@@ -38,6 +38,10 @@ configured.
   (`*Screen.tsx` files), `types/` (`RouterTypes.ts` = param list + global nav decl,
   `LibraryTypes.ts` = domain types), plus `stores/`, `providers/`, `components/`, `consts/`,
   `utils/`.
+- `consts/` holds all shared constants, split per domain: `theme.ts`, `sizes.ts`, `playback.ts`
+  (rates, timing), `files.ts` (audio/image extensions), `storage.ts` (AsyncStorage keys),
+  `notifications.ts` (channel/category IDs + `PlaybackAction`), and `regexes.ts` — every regex used
+  in the app lives here.
 - Stores (`app/stores/`) are MobX classes using
   `makeAutoObservable(this, { internalField: false, ... }, { autoBind: true })`. Non-observable
   fields (native player, listeners, timers, reaction disposers) must be listed in the overrides

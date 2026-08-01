@@ -4,6 +4,7 @@ import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-na
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
+import { PREVIEW_SIZE } from '@consts/sizes';
 import { theme } from '@consts/theme';
 
 interface CoverFocusModalProps {
@@ -13,8 +14,6 @@ interface CoverFocusModalProps {
   onSave: (focusY: number) => void;
   onClose: () => void;
 }
-
-const PREVIEW_SIZE = 260;
 
 /**
  * Modal for adjusting the vertical crop focus of a portrait cover. The drag is driven by a

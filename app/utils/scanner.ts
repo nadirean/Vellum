@@ -1,20 +1,8 @@
 import { Directory, File } from 'expo-file-system';
 
 import { Audiobook, AudioChapter } from '@type/LibraryTypes';
-
-const AUDIO_EXTENSIONS = new Set([
-  '.mp3',
-  '.m4a',
-  '.m4b',
-  '.aac',
-  '.ogg',
-  '.flac',
-  '.wav',
-  '.opus',
-  '.wma',
-]);
-
-const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png']);
+import { AUDIO_EXTENSIONS, IMAGE_EXTENSIONS } from '@consts/files';
+import { DIGITS_ONLY_REGEX, NATURAL_SPLIT_REGEX, TITLE_AUTHOR_REGEX } from '@consts/regexes';
 
 function getExtension(filename: string): string {
   const lastDot = filename.lastIndexOf('.');
@@ -50,8 +38,8 @@ export function naturalCompare(a: string, b: string): number {
     const aNum = parseInt(pa, 10);
     const bNum = parseInt(pb, 10);
 
-    const aIsNum = !isNaN(aNum) && /^\d+$/.test(pa);
-    const bIsNum = !isNaN(bNum) && /^\d+$/.test(pb);
+    const aIsNum = !isNaN(aNum) && DIGITS_ONLY_REGEX.test(pa);
+    const bIsNum = !isNaN(bNum) && DIGITS_ONLY_REGEX.test(pb);
 
     if (aIsNum && bIsNum) {
       if (aNum !== bNum) return aNum - bNum;
@@ -69,7 +57,7 @@ export function naturalCompare(a: string, b: string): number {
 
 /** Split a filename into alternating text / numeric tokens. */
 function tokenize(s: string): string[] {
-  return s.match(/\d+|[^\d]+/g) || [s];
+  return s.match(NATURAL_SPLIT_REGEX) || [s];
 }
 
 /**
@@ -119,7 +107,7 @@ function scanSingleBook(dir: Directory): Audiobook {
   const rawTitle = dir.name;
 
   // Pattern used in Player.tsx: Title [Author]
-  const authorMatch = rawTitle.match(/(.+)\s*\[(.+)\]$/);
+  const authorMatch = rawTitle.match(TITLE_AUTHOR_REGEX);
   const title = authorMatch ? authorMatch[1].trim() : rawTitle;
   const author = authorMatch ? authorMatch[2].trim() : 'Unknown Author';
 

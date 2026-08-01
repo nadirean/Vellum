@@ -7,6 +7,15 @@ import { IReactionDisposer, makeAutoObservable, reaction, runInAction } from 'mo
 import { Audiobook } from '@type/LibraryTypes';
 import * as NotificationUtils from '@utils/notifications';
 import * as Storage from '@utils/storage';
+import { PlaybackAction } from '@consts/notifications';
+import {
+  CHAPTER_SCAN_BATCH,
+  DURATION_MEASURE_TIMEOUT_MS,
+  POLL_INTERVAL_MS,
+  PROGRESS_SAVE_INTERVAL_MS,
+  SKIP_MS,
+  WAIT_FOR_LOAD_TIMEOUT_MS,
+} from '@consts/playback';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -50,16 +59,15 @@ async function measureDuration(uri: string): Promise<number> {
         sub.remove();
         resolve(0);
       }
-    }, 10000);
+    }, DURATION_MEASURE_TIMEOUT_MS);
   });
 }
 
 async function scanChapterDurations(book: Audiobook): Promise<number[]> {
-  const BATCH = 3;
   const durations: number[] = new Array(book.chapters.length).fill(0);
 
-  for (let i = 0; i < book.chapters.length; i += BATCH) {
-    const batch = book.chapters.slice(i, i + BATCH);
+  for (let i = 0; i < book.chapters.length; i += CHAPTER_SCAN_BATCH) {
+    const batch = book.chapters.slice(i, i + CHAPTER_SCAN_BATCH);
     const results = await Promise.all(batch.map((ch) => measureDuration(ch.uri)));
     results.forEach((d: number, j: number) => {
       durations[i + j] = d;
@@ -153,12 +161,12 @@ export class PlayerStore {
     this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const actionId = response.actionIdentifier;
-        if (actionId === NotificationUtils.PlaybackAction.TOGGLE) {
+        if (actionId === PlaybackAction.TOGGLE) {
           this.togglePlayPause();
-        } else if (actionId === NotificationUtils.PlaybackAction.SKIP_BACK) {
-          void this.seekRelative(-15000);
-        } else if (actionId === NotificationUtils.PlaybackAction.SKIP_FORWARD) {
-          void this.seekRelative(15000);
+        } else if (actionId === PlaybackAction.SKIP_BACK) {
+          void this.seekRelative(-SKIP_MS);
+        } else if (actionId === PlaybackAction.SKIP_FORWARD) {
+          void this.seekRelative(SKIP_MS);
         }
       },
     );
@@ -180,7 +188,7 @@ export class PlayerStore {
           console.error('Failed to persist progress for book:', this.currentBook?.id, err);
         });
       }
-    }, 5000);
+    }, PROGRESS_SAVE_INTERVAL_MS);
 
     this.appStateSub = AppState.addEventListener('change', (nextState) => {
       if (nextState === 'background' || nextState === 'inactive') {
@@ -338,12 +346,12 @@ export class PlayerStore {
         if (player.isLoaded) {
           resolve();
         } else {
-          setTimeout(check, 50);
+          setTimeout(check, POLL_INTERVAL_MS);
         }
       };
       check();
       // Safety timeout
-      setTimeout(resolve, 5000);
+      setTimeout(resolve, WAIT_FOR_LOAD_TIMEOUT_MS);
     });
   }
 
