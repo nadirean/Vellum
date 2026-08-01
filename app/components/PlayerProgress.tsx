@@ -37,9 +37,13 @@ export function PlayerProgress({ durationMs, positionMs, rate, onSeek }: PlayerP
         minimumTrackTintColor={theme.colors.progressFill}
         maximumTrackTintColor={theme.colors.progressBg}
         thumbTintColor={theme.colors.primaryLight}
-        onValueChange={setSeekPositionMs}
+        onValueChange={(value) => {
+          setIsSeeking(true);
+          setSeekPositionMs(value);
+        }}
         onSlidingStart={() => setIsSeeking(true)}
         onSlidingComplete={(value) => {
+          setSeekPositionMs(value);
           setIsSeeking(false);
           onSeek(value);
         }}

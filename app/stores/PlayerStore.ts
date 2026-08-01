@@ -95,6 +95,8 @@ export class PlayerStore {
   player: AudioPlayer | null = null;
   listener: { remove: () => void } | null = null;
   loadingChapter = false;
+  pendingSeekTargetMs: number | null = null;
+  lastSeekTime = 0;
   saveTimer: ReturnType<typeof setInterval> | null = null;
   persistReaction: IReactionDisposer | null = null;
   notificationReaction: IReactionDisposer | null = null;
@@ -108,6 +110,8 @@ export class PlayerStore {
         player: false,
         listener: false,
         loadingChapter: false,
+        pendingSeekTargetMs: false,
+        lastSeekTime: false,
         saveTimer: false,
         persistReaction: false,
         notificationReaction: false,
@@ -305,6 +309,8 @@ export class PlayerStore {
       this.currentBook = book;
       this.currentChapterIndex = chapterIndex;
       this.positionMs = positionMsArg;
+      this.pendingSeekTargetMs = positionMsArg;
+      this.lastSeekTime = Date.now();
       this.isPlaying = shouldPlay;
 
       // Set up status listener
@@ -358,6 +364,16 @@ export class PlayerStore {
 
     const curMs = Math.round(status.currentTime * 1000);
     const durMs = Math.round(status.duration * 1000);
+
+    if (this.pendingSeekTargetMs !== null) {
+      const isClose = Math.abs(curMs - this.pendingSeekTargetMs) < 1000;
+      const isTimedOut = Date.now() - this.lastSeekTime > 1000;
+      if (isClose || isTimedOut) {
+        this.pendingSeekTargetMs = null;
+      } else {
+        return;
+      }
+    }
 
     this.positionMs = curMs;
 
@@ -460,6 +476,11 @@ export class PlayerStore {
         const pos = Math.max(0, prevDur + target);
         await this.loadChapterAudio(this.currentBook, prevIdx, pos, this.isPlaying);
       } else {
+        runInAction(() => {
+          this.positionMs = 0;
+        });
+        this.pendingSeekTargetMs = 0;
+        this.lastSeekTime = Date.now();
         await player.seekTo(0);
       }
     } else if (target > totalMs) {
@@ -468,9 +489,19 @@ export class PlayerStore {
         const overflow = target - totalMs;
         await this.loadChapterAudio(this.currentBook, nextIdx, overflow, this.isPlaying);
       } else {
+        runInAction(() => {
+          this.positionMs = totalMs;
+        });
+        this.pendingSeekTargetMs = totalMs;
+        this.lastSeekTime = Date.now();
         await player.seekTo(totalMs / 1000);
       }
     } else {
+      runInAction(() => {
+        this.positionMs = target;
+      });
+      this.pendingSeekTargetMs = target;
+      this.lastSeekTime = Date.now();
       await player.seekTo(target / 1000);
     }
   }
@@ -486,6 +517,11 @@ export class PlayerStore {
       if (accumulated + chDur > targetBookMs || i === durs.length - 1) {
         const posInCh = Math.max(0, Math.min(targetBookMs - accumulated, chDur));
         if (i === this.currentChapterIndex && this.player) {
+          runInAction(() => {
+            this.positionMs = posInCh;
+          });
+          this.pendingSeekTargetMs = posInCh;
+          this.lastSeekTime = Date.now();
           await this.player.seekTo(posInCh / 1000);
         } else {
           await this.loadChapterAudio(book, i, posInCh, this.isPlaying);
