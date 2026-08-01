@@ -69,9 +69,9 @@ configured.
   (whole-blob `Record<bookId, number>`), managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
-- The seek bar is the native `@react-native-community/slider`, declared directly in
-  `app/screens/PlayerScreen.tsx`; it's "write-only" during drag, so the screen mirrors a local
-  `isSeeking`/`seekPositionMs` back into `value` instead of feeding it live progress. The
+- The seek bar is the native `@react-native-community/slider`, living in
+  `app/components/PlayerProgress.tsx`; it's "write-only" during drag, so the component mirrors a
+  local `isSeeking`/`seekPositionMs` back into `value` instead of feeding it live progress. The
   CoverFocusModal drag uses `react-native-gesture-handler` `Gesture.Pan` + a reanimated
   `useSharedValue` so the image tracks the finger on the UI thread.
 
