@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
 
 import { ActivityIndicator, StatusBar, StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import * as SplashScreen from 'expo-splash-screen';
 
-import { RootNavigator } from '@navigation';
+import { Routes } from '@router/Routes';
 import { StoreProvider } from '@providers/StoreProvider';
 import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
@@ -31,7 +31,7 @@ const navTheme = {
   },
 };
 
-export function App() {
+export default function App() {
   const [baseFolder, setBaseFolder] = useState<string | null | undefined>(undefined);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function App() {
       <StoreProvider>
         <NavigationContainer theme={navTheme}>
           <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
-          <RootNavigator initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
+          <Routes initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
         </NavigationContainer>
       </StoreProvider>
     </GestureHandlerRootView>

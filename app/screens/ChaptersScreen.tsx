@@ -20,7 +20,7 @@ function formatTime(ms: number): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-export const Chapters = observer(function Chapters() {
+export const ChaptersScreen = observer(function ChaptersScreen() {
   const player = usePlayerStore();
   const { currentBook, currentChapterIndex, chapterDurations } = player;
 

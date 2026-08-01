@@ -1,18 +1,12 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { Chapters } from '@screens/Chapters';
-import { FolderSetup } from '@screens/FolderSetup';
-import { Library } from '@screens/Library';
-import { Player } from '@screens/Player';
+import type { RootStackParamList } from '@type/RouterTypes';
+import { ChaptersScreen } from '@screens/ChaptersScreen';
+import { FolderSetupScreen } from '@screens/FolderSetupScreen';
+import { LibraryScreen } from '@screens/LibraryScreen';
+import { PlayerScreen } from '@screens/PlayerScreen';
 import { theme } from '@consts/theme';
-
-export type RootStackParamList = {
-  FolderSetup: undefined;
-  Library: undefined;
-  Player: undefined;
-  Chapters: undefined;
-};
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -20,7 +14,7 @@ interface Props {
   initialRoute: keyof RootStackParamList;
 }
 
-export function RootNavigator({ initialRoute }: Props) {
+export function Routes({ initialRoute }: Props) {
   return (
     <Stack.Navigator
       initialRouteName={initialRoute}
@@ -32,10 +26,14 @@ export function RootNavigator({ initialRoute }: Props) {
         animation: 'slide_from_right',
       }}
     >
-      <Stack.Screen name='FolderSetup' component={FolderSetup} options={{ headerShown: false }} />
+      <Stack.Screen
+        name='FolderSetup'
+        component={FolderSetupScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name='Library'
-        component={Library}
+        component={LibraryScreen}
         options={{
           title: 'Vellum',
           headerTitleStyle: {
@@ -47,14 +45,14 @@ export function RootNavigator({ initialRoute }: Props) {
       />
       <Stack.Screen
         name='Player'
-        component={Player}
+        component={PlayerScreen}
         options={{
           title: '',
         }}
       />
       <Stack.Screen
         name='Chapters'
-        component={Chapters}
+        component={ChaptersScreen}
         options={{
           title: 'Chapters',
           headerTitleStyle: {
@@ -66,10 +64,4 @@ export function RootNavigator({ initialRoute }: Props) {
       />
     </Stack.Navigator>
   );
-}
-
-declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
-  }
 }

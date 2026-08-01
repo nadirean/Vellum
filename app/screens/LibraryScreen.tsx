@@ -16,17 +16,17 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { observer } from 'mobx-react-lite';
 
-import type { RootStackParamList } from '@navigation/index';
+import { Audiobook } from '@type/LibraryTypes';
+import type { RootStackParamList } from '@type/RouterTypes';
 import { BookCard } from '@components/BookCard';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import { scanAudiobooks } from '@utils/scanner';
 import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
-import { Audiobook } from '@consts/types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Library'>;
 
-export const Library = observer(function Library() {
+export const LibraryScreen = observer(function LibraryScreen() {
   const navigation = useNavigation<Nav>();
   const player = usePlayerStore();
   const ui = useUIStore();

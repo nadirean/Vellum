@@ -21,16 +21,24 @@ configured.
 
 ## Path aliases (tsconfig.json; resolved at runtime via `experiments.tsconfigPaths` in app.json)
 
-- `@navigation` → `src/navigation`, `@components/*` → `src/components`, `@providers/*`, `@stores/*`,
-  `@utils/*`, `@consts/*`, `@assets/*`
-- `@screens/*` → `src/navigation/screens/*` (NOT `src/screens`)
+- Per-folder aliases under `app/`: `@components/*`, `@consts/*`, `@providers/*`, `@router/*`,
+  `@screens/*`, `@stores/*`, `@type/*`, `@utils/*` (e.g. `@type/RouterTypes` →
+  `app/types/RouterTypes`).
+- `@screens/*` → `app/screens/*` (screens are NOT nested under the router); types live in
+  `app/types/`, separate from consts.
 
 ## Architecture
 
-- Entry `index.tsx` → `src/App.tsx`. `StoreProvider` (`src/providers/StoreProvider.tsx`) creates a
-  single `RootStore` and wraps the navigation stack. Screens consume store slices via
-  `usePlayerStore()` / `useUIStore()` and are wrapped in `observer()` from `mobx-react-lite`.
-- Stores (`src/stores/`) are MobX classes using
+- Entry: `"main": "expo/AppEntry"` → root `App.tsx` (default export — the app shell:
+  `GestureHandlerRootView` + `StoreProvider` + `NavigationContainer` + splash logic).
+  `StoreProvider` (`app/providers/StoreProvider.tsx`) creates a single `RootStore` and wraps the
+  navigation stack. Screens consume store slices via `usePlayerStore()` / `useUIStore()` and are
+  wrapped in `observer()` from `mobx-react-lite`.
+- All app code lives under `app/`: `router/` (`Routes.tsx` — the navigator), `screens/`
+  (`*Screen.tsx` files), `types/` (`RouterTypes.ts` = param list + global nav decl,
+  `LibraryTypes.ts` = domain types), plus `stores/`, `providers/`, `components/`, `consts/`,
+  `utils/`.
+- Stores (`app/stores/`) are MobX classes using
   `makeAutoObservable(this, { internalField: false, ... }, { autoBind: true })`. Non-observable
   fields (native player, listeners, timers, reaction disposers) must be listed in the overrides
   object so they aren't treated as observables.
@@ -45,20 +53,20 @@ configured.
   _after_ an `await` must be wrapped in `runInAction(...)` (MobX strict mode).
 - First run: App reads base folder from AsyncStorage; no folder → `FolderSetup`, else `Library`.
 - Each subfolder of the base folder is one audiobook. Title/author parsed from `Title [Author]`
-  folder names; otherwise author = "Unknown Author" (`src/utils/scanner.ts:124`).
-- Library re-scans only when the base folder changes (`src/navigation/screens/Library.tsx:46`).
+  folder names; otherwise author = "Unknown Author" (`app/utils/scanner.ts:124`).
+- Library re-scans only when the base folder changes (`app/screens/LibraryScreen.tsx:46`).
 - Book progress (AsyncStorage `@vellum/bookProgress`) goes through a versioned, batched flush in
-  `src/utils/storage.ts`; `setBookProgress` awaits persistence. Saved every 5s, on pause, on
+  `app/utils/storage.ts`; `setBookProgress` awaits persistence. Saved every 5s, on pause, on
   background, and before switching books.
 - Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus`,
   managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
-- The seek bar is the native `@react-native-community/slider`, declared directly in `Player.tsx`;
-  it's "write-only" during drag, so the screen mirrors a local `isSeeking`/`seekPositionMs` back
-  into `value` instead of feeding it live progress. The CoverFocusModal drag uses
-  `react-native-gesture-handler` `Gesture.Pan` + a reanimated `useSharedValue` so the image tracks
-  the finger on the UI thread.
+- The seek bar is the native `@react-native-community/slider`, declared directly in
+  `app/screens/PlayerScreen.tsx`; it's "write-only" during drag, so the screen mirrors a local
+  `isSeeking`/`seekPositionMs` back into `value` instead of feeding it live progress. The
+  CoverFocusModal drag uses `react-native-gesture-handler` `Gesture.Pan` + a reanimated
+  `useSharedValue` so the image tracks the finger on the UI thread.
 
 ## Gotchas
 
@@ -71,8 +79,8 @@ configured.
   post-`await` writes in `runInAction`.
 - Don't mark store fields `private` if they're referenced in the `makeAutoObservable` overrides
   object — TypeScript excludes private members from `AnnotationsMap`.
-- Gestures need `GestureHandlerRootView` wrapping the app root (`src/App.tsx`); RNGH 2.30 + worklets
-  0.7 are already deps. No `babel.config.js` exists — `babel-preset-expo` auto-adds the
+- Gestures need `GestureHandlerRootView` wrapping the app root (`App.tsx`); RNGH 2.30 + worklets 0.7
+  are already deps. No `babel.config.js` exists — `babel-preset-expo` auto-adds the
   `react-native-worklets/plugin` (or `react-native-reanimated/plugin`) when present.
 - Notification category registers only the TOGGLE action button; skip-back/forward work via
-  notification responses (see `src/utils/notifications.ts`).
+  notification responses (see `app/utils/notifications.ts`).

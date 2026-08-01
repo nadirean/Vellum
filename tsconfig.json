@@ -3,15 +3,14 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@navigation": ["src/navigation"],
-      "@navigation/*": ["src/navigation/*"],
-      "@assets/*": ["assets/*"],
-      "@components/*": ["src/components/*"],
-      "@providers/*": ["src/providers/*"],
-      "@stores/*": ["src/stores/*"],
-      "@screens/*": ["src/navigation/screens/*"],
-      "@utils/*": ["src/utils/*"],
-      "@consts/*": ["src/consts/*"]
+      "@components/*": ["app/components/*"],
+      "@consts/*": ["app/consts/*"],
+      "@providers/*": ["app/providers/*"],
+      "@router/*": ["app/router/*"],
+      "@screens/*": ["app/screens/*"],
+      "@stores/*": ["app/stores/*"],
+      "@type/*": ["app/types/*"],
+      "@utils/*": ["app/utils/*"]
     },
     "jsx": "react",
     "moduleResolution": "bundler",

@@ -1,6 +1,6 @@
 import { Directory, File } from 'expo-file-system';
 
-import { Audiobook, AudioChapter } from '@consts/types';
+import { Audiobook, AudioChapter } from '@type/LibraryTypes';
 
 const AUDIO_EXTENSIONS = new Set([
   '.mp3',

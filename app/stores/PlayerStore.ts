@@ -4,9 +4,9 @@ import { AudioPlayer, AudioStatus, createAudioPlayer, setAudioModeAsync } from '
 import * as Notifications from 'expo-notifications';
 import { IReactionDisposer, makeAutoObservable, reaction, runInAction } from 'mobx';
 
+import { Audiobook } from '@type/LibraryTypes';
 import * as NotificationUtils from '@utils/notifications';
 import * as Storage from '@utils/storage';
-import { Audiobook } from '@consts/types';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */

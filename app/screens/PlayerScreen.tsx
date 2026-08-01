@@ -48,7 +48,7 @@ const COVER_CONTENT_SIZE = 256;
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export const Player = observer(function Player() {
+export const PlayerScreen = observer(function PlayerScreen() {
   const navigation = useNavigation();
   const player = usePlayerStore();
   const ui = useUIStore();

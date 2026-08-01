@@ -7,13 +7,13 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Directory } from 'expo-file-system';
 
-import type { RootStackParamList } from '@navigation/index';
+import type { RootStackParamList } from '@type/RouterTypes';
 import * as Storage from '@utils/storage';
 import { theme } from '@consts/theme';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'FolderSetup'>;
 
-export function FolderSetup() {
+export function FolderSetupScreen() {
   const navigation = useNavigation<Nav>();
 
   const handleSelectFolder = async () => {
