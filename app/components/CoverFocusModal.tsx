@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { PREVIEW_SIZE } from '@consts/sizes';
@@ -73,7 +73,7 @@ export function CoverFocusModal({
 
   return (
     <Modal visible={visible} transparent animationType='fade' onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <GestureHandlerRootView style={styles.overlay}>
         {/* Tap background to dismiss */}
         <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
 
@@ -88,12 +88,14 @@ export function CoverFocusModal({
               {canAdjust ? (
                 <Animated.Image
                   source={{ uri: coverUri }}
-                  style={{
-                    position: 'absolute',
-                    width: PREVIEW_SIZE,
-                    height: renderedHeight,
-                    ...imageStyle,
-                  }}
+                  style={[
+                    {
+                      position: 'absolute',
+                      width: PREVIEW_SIZE,
+                      height: renderedHeight,
+                    },
+                    imageStyle,
+                  ]}
                 />
               ) : (
                 <Image
@@ -114,7 +116,7 @@ export function CoverFocusModal({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
