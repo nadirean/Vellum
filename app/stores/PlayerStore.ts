@@ -1,19 +1,17 @@
 import { AppState } from 'react-native';
 
 import { AudioPlayer, AudioStatus, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
-import * as Notifications from 'expo-notifications';
+import { Command } from 'expo-media-control';
 import { IReactionDisposer, makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { Audiobook } from '@type/LibraryTypes';
 import * as LocalStore from '@utils/localStore';
-import * as NotificationUtils from '@utils/notifications';
-import { PlaybackAction } from '@consts/notifications';
+import * as MediaControls from '@utils/mediaControls';
 import {
   CHAPTER_SCAN_BATCH,
   DURATION_MEASURE_TIMEOUT_MS,
   POLL_INTERVAL_MS,
   PROGRESS_SAVE_INTERVAL_MS,
-  SKIP_MS,
   WAIT_FOR_LOAD_TIMEOUT_MS,
 } from '@consts/playback';
 
@@ -112,7 +110,7 @@ export class PlayerStore {
   persistReaction: IReactionDisposer | null = null;
   notificationReaction: IReactionDisposer | null = null;
   appStateSub: { remove: () => void } | null = null;
-  notificationResponseSub: Notifications.EventSubscription | null = null;
+  mediaControlRemove: (() => void) | null = null;
 
   constructor() {
     makeAutoObservable(
@@ -127,7 +125,7 @@ export class PlayerStore {
         persistReaction: false,
         notificationReaction: false,
         appStateSub: false,
-        notificationResponseSub: false,
+        mediaControlRemove: false,
       },
       { autoBind: true },
     );
@@ -159,8 +157,8 @@ export class PlayerStore {
 
   /**
    * Boots background playback support: configures the audio session for background/silent-mode
-   * playback, registers the playback notification, and wires the reaction-based side effects that
-   * persist progress (on pause, every 5s, and on backgrounding) and keep the notification current.
+   * playback, enables system media controls, and wires the reaction-based side effects that
+   * persist progress (on pause, every 5s, and on backgrounding) and keep the media controls current.
    */
   setup() {
     void setAudioModeAsync({
@@ -169,22 +167,38 @@ export class PlayerStore {
       interruptionMode: 'duckOthers',
     });
 
-    void NotificationUtils.setupNotifications().catch((error) => {
-      console.error('Failed to set up playback notifications:', error);
+    void MediaControls.setupMediaControls().catch((error) => {
+      console.error('Failed to set up media controls:', error);
     });
 
-    this.notificationResponseSub = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        const actionId = response.actionIdentifier;
-        if (actionId === PlaybackAction.TOGGLE) {
+    this.mediaControlRemove = MediaControls.addListener((event) => {
+      switch (event.command) {
+        case Command.PLAY:
+        case Command.PAUSE:
           this.togglePlayPause();
-        } else if (actionId === PlaybackAction.SKIP_BACK) {
-          void this.seekRelative(-SKIP_MS);
-        } else if (actionId === PlaybackAction.SKIP_FORWARD) {
-          void this.seekRelative(SKIP_MS);
-        }
-      },
-    );
+          break;
+        case Command.STOP:
+          this.togglePlayPause();
+          break;
+        case Command.NEXT_TRACK:
+          void this.goToNextChapter();
+          break;
+        case Command.PREVIOUS_TRACK:
+          void this.goToPreviousChapter();
+          break;
+        case Command.SKIP_FORWARD:
+          void this.seekRelative(15000);
+          break;
+        case Command.SKIP_BACKWARD:
+          void this.seekRelative(-15000);
+          break;
+        case Command.SEEK:
+          if (event.data?.position != null) {
+            void this.seekToBookPosition((event.data.position as number) * 1000);
+          }
+          break;
+      }
+    });
 
     // Persist immediately when playback pauses and every 5s while a book is loaded
     this.persistReaction = reaction(
@@ -219,47 +233,59 @@ export class PlayerStore {
       }
     });
 
-    // Keep the playback notification in sync with player state
+    // Keep the media controls in sync with player state
     this.notificationReaction = reaction(
       () =>
         this.currentBook
           ? [
               this.currentBook.id,
               this.isPlaying,
-              Math.floor(this.bookProgress),
+              Math.floor(this.bookPositionMs),
               this.isLoading,
+              this.rate,
             ].join('|')
           : null,
       () => {
         const book = this.currentBook;
         if (!book) {
-          void NotificationUtils.dismissPlaybackNotification().catch((error) => {
-            console.error('Failed to dismiss playback notification:', error);
+          void MediaControls.dismissMediaControls().catch((error) => {
+            console.error('Failed to dismiss media controls:', error);
           });
           return;
         }
         if (this.isLoading) return;
-        void NotificationUtils.updatePlaybackNotification(
-          book.title,
-          book.author,
+
+        void MediaControls.updateMetadata({
+          title: book.title,
+          author: book.author,
+          coverUri: book.coverUri,
+          durationMs: this.totalBookDurationMs,
+        }).catch((error) => {
+          console.error('Failed to update media metadata:', error);
+        });
+
+        void MediaControls.updatePlaybackState(
           this.isPlaying,
-          Math.floor(this.bookProgress),
+          this.bookPositionMs,
+          this.rate,
         ).catch((error) => {
-          console.error('Failed to update playback notification:', error);
+          console.error('Failed to update media playback state:', error);
         });
       },
     );
   }
 
   /**
-   * Tears down everything setup() created: notification/app-state listeners, the progress and
-   * notification reactions, the save interval, and the native player. Called by the provider when
-   * the app is disposed.
+   * Tears down everything setup() created: media control listeners, app-state listeners,
+   * the progress and notification reactions, the save interval, and the native player.
+   * Called by the provider when the app is disposed.
    */
   dispose() {
-    this.notificationResponseSub?.remove();
+    void MediaControls.dismissMediaControls();
+    void MediaControls.removeAllListeners();
+    this.mediaControlRemove = null;
+
     this.appStateSub?.remove();
-    this.notificationResponseSub = null;
     this.appStateSub = null;
 
     if (this.saveTimer !== null) {
@@ -603,5 +629,30 @@ export class PlayerStore {
     const book = this.currentBook;
     if (!book || index < 0 || index >= book.chapters.length) return;
     await this.loadChapterAudio(book, index, 0, this.isPlaying);
+  }
+
+  /** Advances to the next chapter if one exists, starting from the beginning. */
+  async goToNextChapter() {
+    const book = this.currentBook;
+    if (!book) return;
+    const nextIdx = this.currentChapterIndex + 1;
+    if (nextIdx < book.chapters.length) {
+      await this.loadChapterAudio(book, nextIdx, 0, this.isPlaying);
+    }
+  }
+
+  /** Returns to the beginning of the current chapter, or the previous chapter if already near the start. */
+  async goToPreviousChapter() {
+    const book = this.currentBook;
+    if (!book) return;
+    // If more than 3 seconds into the chapter, restart it; otherwise go to previous
+    if (this.positionMs > 3000) {
+      await this.loadChapterAudio(book, this.currentChapterIndex, 0, this.isPlaying);
+    } else {
+      const prevIdx = this.currentChapterIndex - 1;
+      if (prevIdx >= 0) {
+        await this.loadChapterAudio(book, prevIdx, 0, this.isPlaying);
+      }
+    }
   }
 }
