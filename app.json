@@ -12,9 +12,9 @@
     ],
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/android_icon_foreground.png",
+        "backgroundImage": "./assets/android_icon_background.png",
+        "monochromeImage": "./assets/android_icon_monochrome.png"
       },
       "package": "com.nadirean.vellum"
     },
@@ -24,20 +24,20 @@
     "plugins": [
       "expo-asset",
       [
-        "expo-notifications",
-        {
-          "icon": "./assets/android-push-notification.png"
-        }
-      ],
-      [
         "expo-splash-screen",
         {
           "backgroundColor": "#000000",
-          "image": "./assets/android-icon-foreground.png"
+          "image": "./assets/android_icon_foreground.png"
         }
       ],
       "expo-audio",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-media-control",
+        {
+          "notificationIcon": "./assets/android_notification.png"
+        }
+      ]
     ]
   }
 }

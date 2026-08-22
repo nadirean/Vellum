@@ -6,15 +6,15 @@ in the background with full playback-rate control.
 
 ## Features
 
-- **Folder-based library** — pick a base folder once; each subfolder becomes one audiobook.
-- **Smart scanning** — titles/authors parsed from `Title [Author]` folder names, natural-number
+- **Folder-based library** - pick a base folder once; each subfolder becomes one audiobook.
+- **Smart scanning** - titles/authors parsed from `Title [Author]` folder names, natural-number
   chapter sorting, audio files discovered by extension.
-- **Resume anywhere** — book progress (chapter, position, rates) persisted to MMKV every 5s, on
+- **Resume anywhere** - book progress (chapter, position, rates) persisted to MMKV every 5s, on
   pause, and on backgrounding.
-- **Full-screen player** — seek bar, ±60s rewind/forward with chapter-boundary wrapping, playback
+- **Full-screen player** - seek bar, ±60s rewind/forward with chapter-boundary wrapping, playback
   rates from 0.5x–3.0x, and a chapter list with tap-to-jump.
-- **Adjustable cover focus** — long-press the cover to vertically re-crop it (persisted per book).
-- **Background playback** — plays in the background with a sticky playback notification (play/pause
+- **Adjustable cover focus** - long-press the cover to vertically re-crop it (persisted per book).
+- **Background playback** - plays in the background with a sticky playback notification (play/pause
   action + skip actions).
 
 ## Tech Stack
@@ -22,7 +22,7 @@ in the background with full playback-rate control.
 - **Expo SDK 55** + React Native 0.83 + React 19 (Android-only; requires a dev build)
 - **TypeScript** with strict typechecking
 - **MobX** (`mobx-react-lite`) for state management
-- **expo-audio** for playback (new API — `createAudioPlayer` / `player.replace`)
+- **expo-audio** for playback (new API - `createAudioPlayer` / `player.replace`)
 - **react-native-mmkv** for synchronous local persistence
 - **React Navigation** (native stack), **react-native-gesture-handler** + **reanimated** for gestures
 
@@ -55,7 +55,7 @@ yarn start
 | `yarn start`       | Start the dev server (dev client)                    |
 | `yarn android`     | Run a debug native build (`expo run:android`)        |
 | `yarn iba`         | Build and install a release build                    |
-| `yarn typecheck`   | `tsc --noEmit` — run before pushing                  |
+| `yarn typecheck`   | `tsc --noEmit` - run before pushing                  |
 | `yarn lint`        | ESLint (import order + prettier enforced)            |
 | `yarn lint --fix`  | Auto-fix import sorting and formatting               |
 | `yarn format`      | Prettier write                                       |
@@ -66,8 +66,8 @@ yarn start
 app/
   components/   Presentational, reusable UI (BookCard, PlayerProgress, NowPlaying, ...)
   consts/       Shared constants, split per domain (theme, sizes, playback, files, storage, ...)
-  providers/    StoreProvider — creates the single RootStore and wraps the app
-  router/       Routes.tsx — the native stack navigator
+  providers/    StoreProvider - creates the single RootStore and wraps the app
+  router/       Routes.tsx - the native stack navigator
   screens/      Screen components (Library, Player, Chapters, FolderSetup)
   stores/       MobX stores (RootStore, PlayerStore, UIStore)
   types/        Domain + navigation types (LibraryTypes, RouterTypes)
@@ -87,7 +87,7 @@ App.tsx         App shell: splash, StoreProvider, NavigationContainer, initial r
 - **Persistence**: synchronous MMKV through `app/utils/localStore.ts`. Book progress is a
   whole-blob `Record<bookId, BookProgress>` map, written on a 5s interval, on pause, on background,
   and before switching books.
-- **Background work**: `PlayerStore.setup()` wires MobX `reaction`s — one persists progress, one
+- **Background work**: `PlayerStore.setup()` wires MobX `reaction`s - one persists progress, one
   keeps the playback notification in sync.
 - **Path aliases**: per-folder aliases under `app/` (`@components/*`, `@stores/*`, `@utils/*`, ...),
   resolved at runtime via `experiments.tsconfigPaths`.
