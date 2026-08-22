@@ -24,7 +24,7 @@
     "expo-file-system": "~55.0.25",
     "expo-font": "~55.0.8",
     "expo-linking": "~55.0.17",
-    "expo-media-control": "^1.0.12",
+    "expo-media-control": "patch:expo-media-control@npm%3A1.0.12#~/.yarn/patches/expo-media-control-npm-1.0.12-d7bddfea85.patch",
     "expo-splash-screen": "~55.0.24",
     "expo-system-ui": "~55.0.21",
     "mobx": "^7.0.0",

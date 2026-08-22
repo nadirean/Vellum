@@ -157,18 +157,15 @@ export class PlayerStore {
 
   /**
    * Boots background playback support: configures the audio session for background/silent-mode
-   * playback, enables system media controls, and wires the reaction-based side effects that
-   * persist progress (on pause, every 5s, and on backgrounding) and keep the media controls current.
+   * playback and wires the reaction-based side effects that persist progress (on pause, every 5s,
+   * and on backgrounding) and keep the media controls current. Media controls are enabled lazily
+   * when a book loads (see syncMediaControls), so no notification exists until a book is opened.
    */
   setup() {
     void setAudioModeAsync({
       playsInSilentMode: true,
       shouldPlayInBackground: true,
       interruptionMode: 'duckOthers',
-    });
-
-    void MediaControls.setupMediaControls().catch((error) => {
-      console.error('Failed to set up media controls:', error);
     });
 
     this.mediaControlRemove = MediaControls.addListener((event) => {
@@ -178,7 +175,7 @@ export class PlayerStore {
           this.togglePlayPause();
           break;
         case Command.STOP:
-          this.togglePlayPause();
+          this.stopFromMediaControls();
           break;
         case Command.NEXT_TRACK:
           void this.goToNextChapter();
@@ -233,17 +230,13 @@ export class PlayerStore {
       }
     });
 
-    // Keep the media controls in sync with player state
+    // Keep the media controls in sync with book/playback transitions. Position is intentionally
+    // not tracked: Android animates the scrubber natively from the reported rate, and per-second
+    // updates would interrupt that animation. Explicit syncs happen after seeks and chapter loads.
     this.notificationReaction = reaction(
       () =>
         this.currentBook
-          ? [
-              this.currentBook.id,
-              this.isPlaying,
-              Math.floor(this.bookPositionMs),
-              this.isLoading,
-              this.rate,
-            ].join('|')
+          ? [this.currentBook.id, this.isPlaying, this.rate, this.isLoading].join('|')
           : null,
       () => {
         const book = this.currentBook;
@@ -255,22 +248,7 @@ export class PlayerStore {
         }
         if (this.isLoading) return;
 
-        void MediaControls.updateMetadata({
-          title: book.title,
-          author: book.author,
-          coverUri: book.coverUri,
-          durationMs: this.totalBookDurationMs,
-        }).catch((error) => {
-          console.error('Failed to update media metadata:', error);
-        });
-
-        void MediaControls.updatePlaybackState(
-          this.isPlaying,
-          this.bookPositionMs,
-          this.rate,
-        ).catch((error) => {
-          console.error('Failed to update media playback state:', error);
-        });
+        void this.syncMediaControls(book);
       },
     );
   }
@@ -305,6 +283,50 @@ export class PlayerStore {
       /* ignore */
     }
     this.player = null;
+  }
+
+  /* ---- media controls sync ---- */
+
+  /** Pauses playback and removes the system media notification (Stop button on the controls). */
+  stopFromMediaControls() {
+    this.player?.pause();
+    void MediaControls.dismissMediaControls().catch((error) => {
+      console.error('Failed to dismiss media controls:', error);
+    });
+  }
+
+  /**
+   * Pushes current book metadata and playback state to the system media controls, enabling them
+   * first so the notification only ever exists while a book is loaded. Chained in order: enable
+   * must complete before metadata/state reach the native session.
+   */
+  private async syncMediaControls(book: Audiobook) {
+    try {
+      await MediaControls.ensureMediaControls();
+      await MediaControls.updateMetadata({
+        title: book.title,
+        author: book.author,
+        coverUri: book.coverUri,
+        durationMs: this.totalBookDurationMs,
+      });
+      await MediaControls.updatePlaybackState(this.isPlaying, this.bookPositionMs, this.rate);
+    } catch (error) {
+      console.error('Failed to sync media controls:', error);
+    }
+  }
+
+  /**
+   * Pushes only the playback state (playing/paused, position, rate). Called explicitly after
+   * seeks and chapter loads, where observables tracked by the notification reaction don't change.
+   */
+  private async syncPlaybackState() {
+    if (!this.currentBook || this.isLoading) return;
+    try {
+      await MediaControls.ensureMediaControls();
+      await MediaControls.updatePlaybackState(this.isPlaying, this.bookPositionMs, this.rate);
+    } catch (error) {
+      console.error('Failed to update media playback state:', error);
+    }
   }
 
   /* ---- persistence ---- */
@@ -398,6 +420,9 @@ export class PlayerStore {
           this.chapterDurations = updDurations;
         });
       }
+
+      // Chapter switches don't change anything tracked by the notification reaction
+      void this.syncPlaybackState();
     } catch (error) {
       console.error('Error loading chapter:', error);
     } finally {
@@ -560,6 +585,7 @@ export class PlayerStore {
         this.pendingSeekTargetMs = 0;
         this.lastSeekTime = Date.now();
         await player.seekTo(0);
+        void this.syncPlaybackState();
       }
     } else if (target > totalMs) {
       const nextIdx = this.currentChapterIndex + 1;
@@ -573,6 +599,7 @@ export class PlayerStore {
         this.pendingSeekTargetMs = totalMs;
         this.lastSeekTime = Date.now();
         await player.seekTo(totalMs / 1000);
+        void this.syncPlaybackState();
       }
     } else {
       runInAction(() => {
@@ -581,6 +608,7 @@ export class PlayerStore {
       this.pendingSeekTargetMs = target;
       this.lastSeekTime = Date.now();
       await player.seekTo(target / 1000);
+      void this.syncPlaybackState();
     }
   }
 
@@ -606,6 +634,7 @@ export class PlayerStore {
           this.pendingSeekTargetMs = posInCh;
           this.lastSeekTime = Date.now();
           await this.player.seekTo(posInCh / 1000);
+          void this.syncPlaybackState();
         } else {
           await this.loadChapterAudio(book, i, posInCh, this.isPlaying);
         }

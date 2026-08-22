@@ -29,6 +29,15 @@ export async function setupMediaControls(): Promise<void> {
   });
 }
 
+/**
+ * Enable system media controls only when they are not already active (idempotent).
+ * Safe across JS reloads and after dismissals - native state is the source of truth.
+ */
+export async function ensureMediaControls(): Promise<void> {
+  if (await MediaControl.isEnabled()) return;
+  await setupMediaControls();
+}
+
 /** Update the metadata displayed in system controls (title, artist, artwork, duration). */
 export async function updateMetadata(book: {
   title: string;

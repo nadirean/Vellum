@@ -38,7 +38,8 @@ yarn-error.*
 app-example
 
 # Yarn
-.yarn/
+.yarn/*
+!.yarn/patches
 
 # Native
 ios/

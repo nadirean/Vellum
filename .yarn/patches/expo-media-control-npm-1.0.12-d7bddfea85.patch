@@ -1,0 +1,51 @@
+diff --git a/android/src/main/java/expo/modules/mediacontrol/MediaPlaybackService.kt b/android/src/main/java/expo/modules/mediacontrol/MediaPlaybackService.kt
+index d234e793662bd0830bd90c8a8bd44f212b1e3ea1..c8ffd861ed67439124e41f96c73a9b101eb4e888 100644
+--- a/android/src/main/java/expo/modules/mediacontrol/MediaPlaybackService.kt
++++ b/android/src/main/java/expo/modules/mediacontrol/MediaPlaybackService.kt
+@@ -161,8 +161,21 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
+           println("🤖 Service started in foreground with notification")
+         } catch (e: Exception) {
+           println("⚠️ Cannot start foreground service in onStartCommand: ${e.message}")
+-          // Continue without foreground service - the service can still function for media controls
+-          // The MediaSession will still work for system integration
++          // When started via startForegroundService(), the system requires startForeground()
++          // to be called promptly or it crashes the app. Fall back to a minimal notification.
++          try {
++            val fallback = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
++              .setSmallIcon(android.R.drawable.ic_media_play)
++              .setContentTitle("Media playback")
++              .setShowWhen(false)
++              .build()
++            startForeground(NOTIFICATION_ID, fallback)
++            isForegroundService = true
++            println("🤖 Started in foreground with minimal fallback notification")
++          } catch (e2: Exception) {
++            println("❌ Minimal startForeground failed too: ${e2.message} - stopping self")
++            stopSelf()
++          }
+         }
+       }
+       
+@@ -174,6 +187,22 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
+     return START_STICKY
+   }
+ 
++  override fun onTaskRemoved(rootIntent: Intent?) {
++    super.onTaskRemoved(rootIntent)
++    try {
++      println("🤖 MediaPlaybackService onTaskRemoved - stopping playback and service")
++      currentPlaybackState = PlaybackStateCompat.STATE_STOPPED
++      updatePlaybackState()
++      sendEventToModule("stop", null)
++      stopForeground(true)
++      isForegroundService = false
++      notificationManager.cancel(NOTIFICATION_ID)
++      stopSelf()
++    } catch (e: Exception) {
++      println("❌ Error in onTaskRemoved: ${e.message}")
++    }
++  }
++
+   // =============================================
+   // MediaBrowserService Implementation
+   // =============================================
