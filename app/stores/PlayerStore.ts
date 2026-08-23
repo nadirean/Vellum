@@ -5,6 +5,8 @@ import { Command } from 'expo-media-control';
 import { IReactionDisposer, makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { Audiobook } from '@type/LibraryTypes';
+import type { RootStore } from '@stores/RootStore';
+import { getNotificationArtworkUri } from '@utils/coverArtwork';
 import * as LocalStore from '@utils/localStore';
 import * as MediaControls from '@utils/mediaControls';
 import {
@@ -111,6 +113,7 @@ export class PlayerStore {
   notificationReaction: IReactionDisposer | null = null;
   appStateSub: { remove: () => void } | null = null;
   mediaControlRemove: (() => void) | null = null;
+  root: RootStore | null = null;
 
   constructor() {
     makeAutoObservable(
@@ -126,6 +129,7 @@ export class PlayerStore {
         notificationReaction: false,
         appStateSub: false,
         mediaControlRemove: false,
+        root: false,
       },
       { autoBind: true },
     );
@@ -303,16 +307,27 @@ export class PlayerStore {
   private async syncMediaControls(book: Audiobook) {
     try {
       await MediaControls.ensureMediaControls();
+      const focusY = this.root?.ui.getCoverFocusY(book.id) ?? 50;
+      const coverUri = book.coverUri
+        ? await getNotificationArtworkUri(book.id, book.coverUri, focusY)
+        : null;
       await MediaControls.updateMetadata({
         title: book.title,
         author: book.author,
-        coverUri: book.coverUri,
+        coverUri,
         durationMs: this.totalBookDurationMs,
       });
       await MediaControls.updatePlaybackState(this.isPlaying, this.bookPositionMs, this.rate);
     } catch (error) {
       console.error('Failed to sync media controls:', error);
     }
+  }
+
+  /** Re-pushes metadata to the media controls, e.g. right after the cover focus changes. */
+  async refreshMediaMetadata() {
+    const book = this.currentBook;
+    if (!book || this.isLoading) return;
+    await this.syncMediaControls(book);
   }
 
   /**

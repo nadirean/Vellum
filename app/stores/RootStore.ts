@@ -11,8 +11,9 @@ export class RootStore {
   ui: UIStore;
 
   constructor() {
-    this.player = new PlayerStore();
     this.ui = new UIStore();
+    this.player = new PlayerStore();
+    this.player.root = this;
   }
 
   /** Hydrates persisted state and wires up player background services. */

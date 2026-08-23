@@ -120,7 +120,10 @@ export const PlayerScreen = observer(function PlayerScreen() {
           visible={showFocusModal}
           coverUri={currentBook.coverUri}
           initialFocusY={coverFocusY}
-          onSave={(focusY) => ui.setCoverFocusY(currentBook.id, focusY)}
+          onSave={(focusY) => {
+            ui.setCoverFocusY(currentBook.id, focusY);
+            void player.refreshMediaMetadata();
+          }}
           onClose={() => setShowFocusModal(false)}
         />
       )}

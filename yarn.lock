@@ -4692,6 +4692,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-image-loader@npm:~55.0.1":
+  version: 55.0.1
+  resolution: "expo-image-loader@npm:55.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/a596d36bc95f1fedf63805122e21a36aee859d79f1f6726aa256b24908ba0ace8c413556fbe2a824e845f29375072d8d6144c6a6cfbc30b314a42fa88c68f686
+  languageName: node
+  linkType: hard
+
+"expo-image-manipulator@npm:~55.0.20":
+  version: 55.0.20
+  resolution: "expo-image-manipulator@npm:55.0.20"
+  dependencies:
+    expo-image-loader: "npm:~55.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: 10c0/e580bac7ae940c25f166163ac279764b76b19319ddcc2401149b4f9ad1e7dbf88d58c8031a6592c47acdf274c31f105378c2ef1275430006709a3df6bbddf119
+  languageName: node
+  linkType: hard
+
 "expo-json-utils@npm:~55.0.2":
   version: 55.0.2
   resolution: "expo-json-utils@npm:55.0.2"
@@ -9030,6 +9050,7 @@ __metadata:
     expo-dev-client: "npm:~55.0.38"
     expo-file-system: "npm:~55.0.25"
     expo-font: "npm:~55.0.8"
+    expo-image-manipulator: "npm:~55.0.20"
     expo-linking: "npm:~55.0.17"
     expo-media-control: "patch:expo-media-control@npm%3A1.0.12#~/.yarn/patches/expo-media-control-npm-1.0.12-d7bddfea85.patch"
     expo-splash-screen: "npm:~55.0.24"
