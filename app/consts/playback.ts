@@ -13,3 +13,5 @@ export const DURATION_MEASURE_TIMEOUT_MS = 10000;
 export const POLL_INTERVAL_MS = 50;
 // Safety ceiling for the player-load wait.
 export const WAIT_FOR_LOAD_TIMEOUT_MS = 5000;
+// Safety ceiling for a single native seekTo call (seeking a paused player can hang on Android).
+export const SEEK_TIMEOUT_MS = 3000;

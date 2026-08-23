@@ -14,12 +14,47 @@ import {
   DURATION_MEASURE_TIMEOUT_MS,
   POLL_INTERVAL_MS,
   PROGRESS_SAVE_INTERVAL_MS,
+  SEEK_TIMEOUT_MS,
   WAIT_FOR_LOAD_TIMEOUT_MS,
 } from '@consts/playback';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Resolves with the wrapped promise's value, or with `fallback` if it neither resolves nor
+ * rejects within `timeoutMs`. Native player calls can occasionally hang (e.g. seeking a
+ * paused, never-played player that drops into buffering); timing out keeps the store's
+ * state machines (loadingChapter etc.) recoverable instead of wedged until restart.
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> {
+  return new Promise<T>((resolve) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        resolve(fallback);
+      }
+    }, timeoutMs);
+    void promise.then(
+      (value) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(value);
+        }
+      },
+      () => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve(fallback);
+        }
+      },
+    );
+  });
+}
 
 /** Create a temporary player to measure duration then release it. */
 async function measureDuration(uri: string): Promise<number> {
@@ -418,7 +453,7 @@ export class PlayerStore {
       await this.waitForPlayerLoad(player);
 
       if (positionMsArg > 0) {
-        await player.seekTo(positionMsArg / 1000);
+        await withTimeout(player.seekTo(positionMsArg / 1000), SEEK_TIMEOUT_MS, undefined);
       }
 
       if (shouldPlay) {
@@ -581,7 +616,9 @@ export class PlayerStore {
    */
   async seekRelative(deltaMs: number) {
     const player = this.player;
-    if (!player || !player.isLoaded) return;
+    // Never seek while a load/scan is in flight or the player is mid-buffering - concurrent
+    // native seeks can wedge the player (and a hung seekTo must not race loadChapterAudio).
+    if (!player || !player.isLoaded || this.loadingChapter || this.isLoading) return;
 
     const curMs = Math.round(player.currentTime * 1000);
     const totalMs = Math.round(player.duration * 1000);
@@ -599,7 +636,7 @@ export class PlayerStore {
         });
         this.pendingSeekTargetMs = 0;
         this.lastSeekTime = Date.now();
-        await player.seekTo(0);
+        await withTimeout(player.seekTo(0), SEEK_TIMEOUT_MS, undefined);
         void this.syncPlaybackState();
       }
     } else if (target > totalMs) {
@@ -613,7 +650,7 @@ export class PlayerStore {
         });
         this.pendingSeekTargetMs = totalMs;
         this.lastSeekTime = Date.now();
-        await player.seekTo(totalMs / 1000);
+        await withTimeout(player.seekTo(totalMs / 1000), SEEK_TIMEOUT_MS, undefined);
         void this.syncPlaybackState();
       }
     } else {
@@ -622,7 +659,7 @@ export class PlayerStore {
       });
       this.pendingSeekTargetMs = target;
       this.lastSeekTime = Date.now();
-      await player.seekTo(target / 1000);
+      await withTimeout(player.seekTo(target / 1000), SEEK_TIMEOUT_MS, undefined);
       void this.syncPlaybackState();
     }
   }
@@ -634,7 +671,9 @@ export class PlayerStore {
    */
   async seekToBookPosition(targetBookMs: number) {
     const book = this.currentBook;
-    if (!book) return;
+    // Never seek while a load/scan is in flight - the slider can otherwise race the initial
+    // restore-seek with concurrent native seeks, which can wedge the player.
+    if (!book || this.loadingChapter || this.isLoading) return;
     const durs = this.chapterDurations;
 
     let accumulated = 0;
@@ -642,13 +681,13 @@ export class PlayerStore {
       const chDur = durs[i] ?? 0;
       if (accumulated + chDur > targetBookMs || i === durs.length - 1) {
         const posInCh = Math.max(0, Math.min(targetBookMs - accumulated, chDur));
-        if (i === this.currentChapterIndex && this.player) {
+        if (i === this.currentChapterIndex && this.player?.isLoaded) {
           runInAction(() => {
             this.positionMs = posInCh;
           });
           this.pendingSeekTargetMs = posInCh;
           this.lastSeekTime = Date.now();
-          await this.player.seekTo(posInCh / 1000);
+          await withTimeout(this.player.seekTo(posInCh / 1000), SEEK_TIMEOUT_MS, undefined);
           void this.syncPlaybackState();
         } else {
           await this.loadChapterAudio(book, i, posInCh, this.isPlaying);
