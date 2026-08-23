@@ -67,6 +67,10 @@ configured.
   pause, on background, and before switching books.
 - Cover focus (vertical crop 0–100, default 50) persisted per book under `@vellum/coverFocus.v1`
   (whole-blob `Record<bookId, number>`), managed by `UIStore` (`getCoverFocusY`/`setCoverFocusY`).
+- Library sort preference (`recent`/`title`/`author` × direction, default recent-descending)
+  persisted under `@vellum/librarySort.v1`, managed by `UIStore`; applied in
+  `LibraryScreen` via `sortAudiobooks` (`app/utils/sorting.ts`) using the progress map's
+  `lastPlayedAt` for recency.
 - Chapter durations measured at book load with a temp player, batched 3 at a time; reused when all
   stored durations are positive (`scanChapterDurations`).
 - The seek bar is the native `@react-native-community/slider`, living in

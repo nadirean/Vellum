@@ -5,8 +5,13 @@
  */
 import { createMMKV } from 'react-native-mmkv';
 
-import type { BookProgress } from '@type/LibraryTypes';
-import { BASE_FOLDER_KEY, BOOK_PROGRESS_KEY, COVER_FOCUS_KEY } from '@consts/storage';
+import type { BookProgress, LibrarySort } from '@type/LibraryTypes';
+import {
+  BASE_FOLDER_KEY,
+  BOOK_PROGRESS_KEY,
+  COVER_FOCUS_KEY,
+  LIBRARY_SORT_KEY,
+} from '@consts/storage';
 
 const storage = createMMKV();
 
@@ -84,4 +89,31 @@ export function saveCoverFocusY(bookId: string, focusY: number): void {
   const all = getAllCoverFocus();
   all[bookId] = focusY;
   storage.set(COVER_FOCUS_KEY, JSON.stringify(all));
+}
+
+/* ---- Library sort preference ---- */
+
+/** Returns the persisted library sort preference, or null when none is stored. */
+export function getLibrarySort(): LibrarySort | null {
+  const raw = storage.getString(LIBRARY_SORT_KEY);
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'mode' in parsed &&
+      'ascending' in parsed
+    ) {
+      return parsed as LibrarySort;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Persists the library sort preference. */
+export function saveLibrarySort(sort: LibrarySort): void {
+  storage.set(LIBRARY_SORT_KEY, JSON.stringify(sort));
 }

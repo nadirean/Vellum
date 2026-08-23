@@ -22,3 +22,16 @@ export function computeProgressMap(bookList: Audiobook[]): Record<string, number
   }
   return map;
 }
+
+/**
+ * Computes each book's last-played timestamp from persisted progress (0 when never played),
+ * used by the library's "recently played" ordering.
+ */
+export function computeLastPlayedMap(bookList: Audiobook[]): Record<string, number> {
+  const all = getAllProgress();
+  const map: Record<string, number> = {};
+  for (const b of bookList) {
+    map[b.id] = all[b.id]?.lastPlayedAt ?? 0;
+  }
+  return map;
+}

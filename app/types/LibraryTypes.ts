@@ -22,3 +22,12 @@ export interface BookProgress {
   lastPlayedAt: number;
   rate?: number;
 }
+
+// Library list sorting mode: 'recent' orders by last-played timestamp, title/author alphabetically.
+export type LibrarySortMode = 'recent' | 'title' | 'author';
+
+// Active library sorting (persisted); ascending flips the comparator of whichever mode is active.
+export interface LibrarySort {
+  mode: LibrarySortMode;
+  ascending: boolean;
+}

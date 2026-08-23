@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -19,10 +19,12 @@ import { observer } from 'mobx-react-lite';
 import { Audiobook } from '@type/LibraryTypes';
 import type { RootStackParamList } from '@type/RouterTypes';
 import { BookCard } from '@components/BookCard';
+import { SortModal } from '@components/SortModal';
 import { usePlayerStore, useUIStore } from '@providers/StoreProvider';
 import * as LocalStore from '@utils/localStore';
-import { computeProgressMap } from '@utils/progress';
+import { computeLastPlayedMap, computeProgressMap } from '@utils/progress';
 import { scanAudiobooks } from '@utils/scanner';
+import { LastPlayedMap, sortAudiobooks } from '@utils/sorting';
 import { theme } from '@consts/theme';
 
 /**
@@ -39,6 +41,8 @@ export const LibraryScreen = observer(function LibraryScreen() {
   const [isScanning, setIsScanning] = useState(true);
   const [lastFolder, setLastFolder] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [lastPlayedMap, setLastPlayedMap] = useState<LastPlayedMap>({});
+  const [showSortModal, setShowSortModal] = useState(false);
 
   const loadBooks = useCallback(async () => {
     const folder = LocalStore.getBaseFolder();
@@ -60,6 +64,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
       setBooks(scanned);
       setLastFolder(folder);
       setProgressMap(computeProgressMap(scanned));
+      setLastPlayedMap(computeLastPlayedMap(scanned));
     } catch (e) {
       console.error('Scan error:', e);
     } finally {
@@ -69,7 +74,14 @@ export const LibraryScreen = observer(function LibraryScreen() {
 
   const refreshProgress = useCallback(() => {
     setProgressMap(computeProgressMap(books));
+    setLastPlayedMap(computeLastPlayedMap(books));
   }, [books]);
+
+  // Sorted for display; recomputed when books, playback recency, or the sort preference change.
+  const sortedBooks = useMemo(
+    () => sortAudiobooks(books, lastPlayedMap, ui.librarySort),
+    [books, lastPlayedMap, ui.librarySort],
+  );
 
   // Scan on focus
   useFocusEffect(
@@ -82,12 +94,17 @@ export const LibraryScreen = observer(function LibraryScreen() {
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity
-          onPress={() => navigation.navigate('FolderSetup')}
-          style={styles.headerBtn}
-        >
-          <MaterialCommunityIcons name='folder' size={22} color={theme.colors.text} />
-        </TouchableOpacity>
+        <View style={styles.headerBtns}>
+          <TouchableOpacity onPress={() => setShowSortModal(true)} style={styles.headerBtn}>
+            <MaterialCommunityIcons name='sort' size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('FolderSetup')}
+            style={styles.headerBtn}
+          >
+            <MaterialCommunityIcons name='folder' size={22} color={theme.colors.text} />
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation]);
@@ -152,7 +169,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
     <View style={styles.container}>
       <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
       <FlatList
-        data={books}
+        data={sortedBooks}
         renderItem={renderBook}
         keyExtractor={(b) => b.id}
         contentContainerStyle={styles.list}
@@ -168,6 +185,14 @@ export const LibraryScreen = observer(function LibraryScreen() {
             colors={[theme.colors.primary]}
           />
         }
+      />
+
+      <SortModal
+        visible={showSortModal}
+        sort={ui.librarySort}
+        onSelect={(mode) => ui.setLibrarySort(mode)}
+        onFlipDirection={ui.flipLibrarySortDirection}
+        onClose={() => setShowSortModal(false)}
       />
     </View>
   );
@@ -220,6 +245,10 @@ const styles = StyleSheet.create({
   },
   list: {
     padding: theme.spacing.md,
+  },
+  headerBtns: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerBtn: {
     paddingHorizontal: theme.spacing.sm,
