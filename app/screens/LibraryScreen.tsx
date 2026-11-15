@@ -44,6 +44,11 @@ export const LibraryScreen = observer(function LibraryScreen() {
   const [lastPlayedMap, setLastPlayedMap] = useState<LastPlayedMap>({});
   const [showSortModal, setShowSortModal] = useState(false);
 
+  const refreshProgress = useCallback(() => {
+    setProgressMap(computeProgressMap(books));
+    setLastPlayedMap(computeLastPlayedMap(books));
+  }, [books]);
+
   const loadBooks = useCallback(async () => {
     const folder = LocalStore.getBaseFolder();
     if (!folder) {
@@ -70,12 +75,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
     } finally {
       setIsScanning(false);
     }
-  }, [lastFolder, books.length]);
-
-  const refreshProgress = useCallback(() => {
-    setProgressMap(computeProgressMap(books));
-    setLastPlayedMap(computeLastPlayedMap(books));
-  }, [books]);
+  }, [lastFolder, books.length, refreshProgress]);
 
   // Sorted for display; recomputed when books, playback recency, or the sort preference change.
   const sortedBooks = useMemo(
