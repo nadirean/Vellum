@@ -18,9 +18,6 @@
       },
       "package": "com.nadirean.vellum"
     },
-    "experiments": {
-      "tsconfigPaths": true
-    },
     "plugins": [
       "expo-asset",
       [

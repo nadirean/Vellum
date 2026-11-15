@@ -130,7 +130,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
   if (isScanning) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' />
         <ActivityIndicator size='large' color={theme.colors.primary} />
         <Text style={styles.scanText}>Scanning audiobooks…</Text>
       </View>
@@ -140,7 +140,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
   if (books.length === 0) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' />
         <MaterialCommunityIcons
           name='inbox'
           size={56}
@@ -167,7 +167,7 @@ export const LibraryScreen = observer(function LibraryScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+      <StatusBar barStyle='light-content' />
       <FlatList
         data={sortedBooks}
         renderItem={renderBook}

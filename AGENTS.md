@@ -2,10 +2,10 @@
 
 ## Stack
 
-Expo SDK 55 + React Native 0.83 + React 19.2, TypeScript, Yarn 4 (node-modules linker), Node
-`v24.13.1` (`.nvmrc`). Android-focused: `app.json` configures only Android (package `com.vellum`).
-No test setup exists. Lint (ESLint flat config, `eslint.config.mjs`) and format (prettier) are
-configured.
+Expo SDK 58 + React Native 0.88 + React 19.3, TypeScript 6.0, Yarn 4.18 (node-modules linker),
+Node `26.13.1` (`.nvmrc`, `engines`). Android-focused: `app.json` configures only Android (package
+`com.vellum`). No test setup exists. Lint (ESLint 9 flat config, `eslint.config.mjs`) and format
+(Prettier 3.10) are configured.
 
 ## Commands
 
@@ -15,11 +15,11 @@ configured.
   build.
 - `yarn iba` — `expo run:android --variant release` (release build).
 - `yarn typecheck` — `tsc --noEmit`; the verification step before pushing.
-- `yarn lint` — `expo lint`; runs ESLint (import order + prettier are enforced as errors).
+- `yarn lint` — `eslint .`; runs ESLint (import order + prettier are enforced as errors).
 - `yarn lint --fix` — auto-fix import sorting and formatting (run after adding files).
 - `yarn format` — `prettier --write`.
 
-## Path aliases (tsconfig.json; resolved at runtime via `experiments.tsconfigPaths` in app.json)
+## Path aliases (tsconfig.json; resolved by Metro automatically — `tsconfigPaths` is the default)
 
 - Per-folder aliases under `app/`: `@components/*`, `@consts/*`, `@providers/*`, `@router/*`,
   `@screens/*`, `@stores/*`, `@type/*`, `@utils/*` (e.g. `@type/RouterTypes` →
@@ -90,9 +90,18 @@ configured.
   post-`await` writes in `runInAction`.
 - Don't mark store fields `private` if they're referenced in the `makeAutoObservable` overrides
   object — TypeScript excludes private members from `AnnotationsMap`.
-- Gestures need `GestureHandlerRootView` wrapping the app root (`App.tsx`); RNGH 2.30 + worklets 0.7
-  are already deps. No `babel.config.js` exists — `babel-preset-expo` auto-adds the
-  `react-native-worklets/plugin` (or `react-native-reanimated/plugin`) when present.
+- Gestures need `GestureHandlerRootView` wrapping the app root (`App.tsx`); RNGH 3.3 + worklets 0.13
+  are the deps. The legacy `Gesture.Pan()` builder still works in RNGH 3 (routed through
+  `LegacyGestureDetector`); new code can use `usePanGesture`. No `babel.config.js` exists —
+  `babel-preset-expo` auto-adds the `react-native-worklets/plugin` when present.
+- System media controls come from `expo-media-control@1.0.12`, patched via
+  `.yarn/patches/expo-media-control-npm-1.0.12-*.patch`. **Do not upgrade to 2.x** — it moves to
+  Media3's standard notification and drops the custom options. **Do not call** `expo-audio`'s
+  `setActiveForLockScreen` alongside it; both create a media session and the OS routes commands to
+  only one.
+- `StatusBar` has no `backgroundColor` prop on RN 0.88 (edge-to-edge); the screen surface shows
+  through. There is no safe-area handling in the app — if content collides with system bars, use
+  `react-native-safe-area-context` (already a dependency).
 - Notification category registers only the TOGGLE action button; skip-back/forward work via
   notification responses (see `app/utils/notifications.ts`).
 

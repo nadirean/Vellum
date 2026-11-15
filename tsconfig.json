@@ -1,16 +1,15 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@components/*": ["app/components/*"],
-      "@consts/*": ["app/consts/*"],
-      "@providers/*": ["app/providers/*"],
-      "@router/*": ["app/router/*"],
-      "@screens/*": ["app/screens/*"],
-      "@stores/*": ["app/stores/*"],
-      "@type/*": ["app/types/*"],
-      "@utils/*": ["app/utils/*"]
+      "@components/*": ["./app/components/*"],
+      "@consts/*": ["./app/consts/*"],
+      "@providers/*": ["./app/providers/*"],
+      "@router/*": ["./app/router/*"],
+      "@screens/*": ["./app/screens/*"],
+      "@stores/*": ["./app/stores/*"],
+      "@type/*": ["./app/types/*"],
+      "@utils/*": ["./app/utils/*"]
     },
     "jsx": "react",
     "moduleResolution": "bundler",

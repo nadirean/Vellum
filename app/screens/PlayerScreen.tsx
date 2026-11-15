@@ -56,7 +56,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
   if (!currentBook) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' />
         <Text style={styles.noBookText}>No book selected</Text>
       </View>
     );
@@ -65,7 +65,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+        <StatusBar barStyle='light-content' />
         <ActivityIndicator size='large' color={theme.colors.primary} />
         <Text style={styles.loadingText}>Loading audiobook…</Text>
         <Text style={styles.loadingSubtext}>Scanning chapter durations</Text>
@@ -81,7 +81,7 @@ export const PlayerScreen = observer(function PlayerScreen() {
       contentContainerStyle={styles.contentContainer}
       bounces={false}
     >
-      <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+      <StatusBar barStyle='light-content' />
 
       <NowPlaying
         chapterIndex={currentChapterIndex}

@@ -1,5 +1,5 @@
-import { NavigationContainer } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
 
 import { StatusBar, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -47,7 +47,7 @@ export default function App() {
     <GestureHandlerRootView style={styles.root}>
       <StoreProvider>
         <NavigationContainer theme={navTheme}>
-          <StatusBar barStyle='light-content' backgroundColor={theme.colors.surface} />
+          <StatusBar barStyle='light-content' />
           <Routes initialRoute={baseFolder ? 'Library' : 'FolderSetup'} />
         </NavigationContainer>
       </StoreProvider>
