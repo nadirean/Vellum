@@ -14,5 +14,3 @@ coverage
 .env.local
 assets/**/generated/**/*
 README.md
-app.json
-tsconfig.json

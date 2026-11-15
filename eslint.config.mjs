@@ -6,6 +6,8 @@ import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
 import pluginReact from 'eslint-plugin-react';
 // @ts-ignore
+import pluginReactHooks from 'eslint-plugin-react-hooks';
+// @ts-ignore
 import pluginReactNative from 'eslint-plugin-react-native';
 import pluginPrettier from 'eslint-plugin-prettier';
 
@@ -27,6 +29,7 @@ export default defineConfig([
     plugins: {
       '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
       react: pluginReact,
+      'react-hooks': pluginReactHooks,
       'react-native': pluginReactNative,
       prettier: pluginPrettier,
       'simple-import-sort': require('eslint-plugin-simple-import-sort'),
@@ -35,6 +38,8 @@ export default defineConfig([
     rules: {
       'prettier/prettier': 'error',
       'react/react-in-jsx-scope': 'off',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
       'react-native/no-inline-styles': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
